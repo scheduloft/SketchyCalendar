@@ -4,6 +4,8 @@ import { Point } from "geom/point";
 import { Vec } from "geom/vec";
 import Render, { fillAndStroke, fill, stroke, font } from "render";
 
+import { getEventsOnDay } from "googlecalendar";
+
 const DEBUG = true;
 
 export type Id<T> = string & { __brand: T };
@@ -18,7 +20,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10
+  distance: number = 10,
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -35,6 +37,11 @@ export type Card = {
   width: number;
   height: number;
   strokes: Array<Stroke>;
+  type: "Default" | "Calendar";
+  props?: {
+    calendarIds: Array<string>;
+    date: Date;
+  };
 };
 
 export type CardInstance = {
@@ -104,6 +111,27 @@ export default class StateManager {
         width: 5,
         height: 5,
         strokes: [],
+        type: "Default",
+      };
+    });
+
+    return this.createCardInstance(cardId, position);
+  }
+
+  createNewCalendarCard(position: Point, calendarIds: string[]): CardInstance {
+    const cardId = generateId<Card>();
+
+    this.update((state) => {
+      state.cards[cardId] = {
+        id: cardId,
+        width: 200,
+        height: 700,
+        strokes: [],
+        type: "Calendar",
+        props: {
+          calendarIds,
+          date: new Date(),
+        },
       };
     });
 
@@ -136,7 +164,7 @@ export default class StateManager {
   moveCardInstance(instanceId: Id<CardInstance>, position: Point): void {
     this.update((state) => {
       const instance = state.pages[this.currentPage].cardInstances.find(
-        (instance) => instance.id === instanceId
+        (instance) => instance.id === instanceId,
       );
       if (!instance) return;
       instance.x = position.x;
@@ -212,13 +240,13 @@ export default class StateManager {
     this.update((state) => {
       if (stroke.pageId) {
         const mutableStroke = state.pages[stroke.pageId].strokes.find(
-          (s) => s.id === stroke.id
+          (s) => s.id === stroke.id,
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
       } else if (stroke.cardId) {
         const mutableStroke = state.cards[stroke.cardId].strokes.find(
-          (s) => s.id === stroke.id
+          (s) => s.id === stroke.id,
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
@@ -242,7 +270,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001")
+        fill("#0001"),
       );
       render.round_rect(
         instance.x,
@@ -250,8 +278,49 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5)
+        fillAndStroke("#FFF", "#0002", 0.5),
       );
+
+      if (card.type == "Calendar") {
+        // Draw calendar grid
+        for (let i = 0; i < 13; i++) {
+          const hour = i + 8;
+          const offset = (card.height / 13) * i;
+          const y = instance.y + offset;
+          render.text(`${hour}:00`, instance.x + 10, y + 15, fill("#000"));
+          if (i > 0) {
+            render.line(
+              instance.x,
+              y,
+              instance.x + card.width,
+              y,
+              stroke("#AAA", 1),
+            );
+          }
+        }
+
+        const events = getEventsOnDay(card.props!);
+        for (const event of events) {
+          const start = new Date(event.start!.dateTime!);
+          const start_offset = getTimeOffset(start, 8, 21, 0, card.height);
+          const end = new Date(event.end!.dateTime!);
+          const end_offset = getTimeOffset(end, 8, 21, 0, card.height);
+          render.round_rect(
+            instance.x + 50,
+            instance.y + start_offset,
+            card.width - 50,
+            end_offset - start_offset,
+            3,
+            fill("#00000011"),
+          );
+          render.text(
+            event.summary!,
+            instance.x + 60,
+            instance.y + start_offset + 15,
+            fill("#AAA"),
+          );
+        }
+      }
 
       card.strokes.forEach((s) => {
         const offset_stroke = s.points.map((p) => Vec.add(p, instance));
@@ -259,4 +328,27 @@ export default class StateManager {
       });
     });
   }
+}
+
+function getTimeOffset(
+  date: Date,
+  startHour: number,
+  endHour: number,
+  offsetStart: number,
+  offsetEnd: number,
+): number {
+  const totalMinutesInRange = (endHour - startHour) * 60;
+  const minutesSinceStart =
+    (date.getHours() - startHour) * 60 + date.getMinutes();
+
+  // Clamp minutesSinceStart between 0 and totalMinutesInRange
+  const clampedMinutes = Math.max(
+    0,
+    Math.min(minutesSinceStart, totalMinutesInRange),
+  );
+
+  const ratio = clampedMinutes / totalMinutesInRange;
+  const offset = offsetStart + ratio * (offsetEnd - offsetStart);
+
+  return offset;
 }

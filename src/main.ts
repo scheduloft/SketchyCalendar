@@ -4,7 +4,11 @@ import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-index
 import tick from "tick";
 import Render from "render";
 import StateManager, { createStateDoc, State } from "state";
-import { syncAllCalendars, getAllCalendars } from "./googlecalendar";
+import {
+  syncAllCalendars,
+  getAllCalendars,
+  getEventsOnDay,
+} from "./googlecalendar";
 
 import Input from "input";
 
@@ -36,6 +40,14 @@ const render = new Render();
 const state_manager = new StateManager(handle);
 
 const input = new Input(state_manager);
+
+//const events =
+const today = new Date();
+const events = getEventsOnDay({
+  calendarIds: ["marcel.goethals@gmail.com"],
+  date: today,
+});
+console.log(events);
 
 tick((_) => {
   render.clear();

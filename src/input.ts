@@ -4,6 +4,7 @@ import CreateCardTool from "tool/createcard";
 import DrawTool from "tool/draw";
 import CopyCardTool from "tool/copycard";
 import EraseTool from "tool/erase";
+import CreateCalendarCardTool from "tool/createcalendarcard";
 
 export default class Input {
   state_manager: StateManager;
@@ -35,6 +36,8 @@ export default class Input {
         this.tool = new CopyCardTool(this.state_manager);
       } else if (e.key == "e") {
         this.tool = new EraseTool(this.state_manager);
+      } else if (e.key == "k") {
+        this.tool = new CreateCalendarCardTool(this.state_manager);
       }
     });
   }
