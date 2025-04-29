@@ -3,6 +3,12 @@ import Render from "render";
 import StateManager from "state";
 import Input from "input";
 
+import { syncAllCalendars, getAllCalendars } from "./GoogleCalendar";
+
+syncAllCalendars();
+
+console.log(getAllCalendars());
+
 const render = new Render();
 const state_manager = new StateManager();
 

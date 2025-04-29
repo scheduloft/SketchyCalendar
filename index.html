@@ -1,24 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Calendar playground</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: monospace;
-                overflow: hidden;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar playground</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: monospace;
+        overflow: hidden;
 
-                touch-action: none;
-                -webkit-user-drag: none;
-                -webkit-user-select: none;
-                user-select: none;
-            }
-        </style>
-    </head>
-    <body>
-        <script type="module" src="/src/main.ts"></script>
-    </body>
+        touch-action: none;
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
