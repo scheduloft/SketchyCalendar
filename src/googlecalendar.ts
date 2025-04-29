@@ -1,4 +1,5 @@
 import localforage from "localforage";
+import { gapi } from "gapi-script";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
