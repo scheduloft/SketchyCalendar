@@ -15,14 +15,17 @@ export default class DrawTool implements Tool {
 
   onpointerdown(position: Point) {
     const { stroke, offset } = this.state_manager.createNewStroke(position);
-    stroke.points.push(Vec.sub(position, offset));
+    this.state_manager.addPointToStroke(stroke, Vec.sub(position, offset));
     this.stroke = stroke;
     this.offset = offset;
   }
 
   onpointermove(position: Point) {
     if (this.stroke == null) return;
-    this.stroke.points.push(Vec.sub(position, this.offset));
+    this.state_manager.addPointToStroke(
+      this.stroke,
+      Vec.sub(position, this.offset)
+    );
   }
 
   onpointerup(position: Point) {

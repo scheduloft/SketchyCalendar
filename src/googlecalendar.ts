@@ -16,13 +16,10 @@ const isGoogleApiReady = new Promise((resolve) => {
 
     // If the token exists, set the token directly without prompting the user
     if (savedToken) {
-      console.log("resolve");
       gapi.client.setToken(savedToken);
       resolve(true);
       return;
     }
-
-    console.log("client id", CLIENT_ID);
 
     const tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
@@ -77,10 +74,7 @@ const saveAccessToken = ({
 export const fetchCalendars = async (): Promise<
   gapi.client.calendar.CalendarListEntry[]
 > => {
-  console.log("wait for google api");
   await isGoogleApiReady;
-  console.log("google api ready");
-
   const response = await gapi.client.calendar.calendarList.list();
   return response.result.items ?? [];
 };

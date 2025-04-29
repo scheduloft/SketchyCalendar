@@ -1,10 +1,15 @@
+import * as Automerge from "@automerge/automerge/next";
+import { DocHandle, Repo } from "@automerge/automerge-repo";
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, { fillAndStroke, fill, stroke } from "render";
+import Render, { fillAndStroke, fill, stroke, font } from "render";
+
+const DEBUG = true;
 
 export type Id<T> = string & { __brand: T };
 
 export type Stroke = {
+  id: Id<Stroke>;
   cardId?: Id<Card>;
   pageId?: Id<Page>;
   points: Array<Point>;
@@ -13,7 +18,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10,
+  distance: number = 10
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -52,36 +57,55 @@ export type State = {
 };
 
 function generateId<T>(): Id<T> {
-  return `${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}` as Id<T>;
+  return `${Math.random().toString(36).substring(2, 15)}${Math.random()
+    .toString(36)
+    .substring(2, 15)}` as Id<T>;
+}
+
+export function createStateDoc(repo: Repo): DocHandle<State> {
+  const firstPageId = generateId<Page>();
+
+  return repo.create({
+    cards: {},
+    pages: {
+      [firstPageId]: {
+        id: firstPageId,
+        cardInstances: [],
+        strokes: [],
+      },
+    },
+    pageOrder: [firstPageId],
+  });
 }
 
 export default class StateManager {
   currentPage: Id<Page>;
-  state: State;
+  docHandle: DocHandle<State>;
 
-  constructor() {
-    this.currentPage = generateId<Page>();
-    this.state = {
-      cards: {},
-      pages: {
-        [this.currentPage]: {
-          id: this.currentPage,
-          cardInstances: [],
-          strokes: [],
-        },
-      },
-      pageOrder: [this.currentPage],
-    };
+  constructor(docHandle: DocHandle<State>) {
+    this.docHandle = docHandle;
+    this.currentPage = this.state.pageOrder[0];
+  }
+
+  get state(): State {
+    return this.docHandle.docSync() as State;
+  }
+
+  update(callback: (state: State) => void) {
+    this.docHandle.change(callback);
   }
 
   createNewCard(position: Point): CardInstance {
     const cardId = generateId<Card>();
-    this.state.cards[cardId] = {
-      id: cardId,
-      width: 5,
-      height: 5,
-      strokes: [],
-    };
+
+    this.update((state) => {
+      state.cards[cardId] = {
+        id: cardId,
+        width: 5,
+        height: 5,
+        strokes: [],
+      };
+    });
 
     return this.createCardInstance(cardId, position);
   }
@@ -94,33 +118,44 @@ export default class StateManager {
       x: position.x,
       y: position.y,
     };
-    this.state.pages[this.currentPage].cardInstances.push(instance);
+
+    this.update((state) => {
+      state.pages[this.currentPage].cardInstances.push(instance);
+    });
+
     return instance;
   }
 
   updateCardSize(cardId: Id<Card>, width: number, height: number): void {
-    this.state.cards[cardId].width = width;
-    this.state.cards[cardId].height = height;
+    this.update((state) => {
+      state.cards[cardId].width = width;
+      state.cards[cardId].height = height;
+    });
   }
 
   moveCardInstance(instanceId: Id<CardInstance>, position: Point): void {
-    const instance = this.state.pages[this.currentPage].cardInstances.find(
-      (instance) => instance.id === instanceId,
-    );
-    if (!instance) return;
-    instance.x = position.x;
-    instance.y = position.y;
+    this.update((state) => {
+      const instance = state.pages[this.currentPage].cardInstances.find(
+        (instance) => instance.id === instanceId
+      );
+      if (!instance) return;
+      instance.x = position.x;
+      instance.y = position.y;
+    });
   }
 
   erase(position: Point): void {
     const instance = this.findCardInstanceAt(position);
     if (!instance) return;
-    const card = this.state.cards[instance.cardId];
-    card.strokes.forEach((stroke) => {
-      let offset_points = stroke.points.map((p) => Vec.add(p, instance));
-      if (arePointsNear(position, offset_points)) {
-        card.strokes.splice(card.strokes.indexOf(stroke), 1);
-      }
+
+    this.update((state) => {
+      const card = state.cards[instance.cardId];
+      card.strokes.forEach((stroke) => {
+        let offset_points = stroke.points.map((p) => Vec.add(p, instance));
+        if (arePointsNear(position, offset_points)) {
+          card.strokes.splice(card.strokes.indexOf(stroke), 1);
+        }
+      });
     });
   }
 
@@ -143,22 +178,52 @@ export default class StateManager {
     const instance = this.findCardInstanceAt(position);
 
     if (instance) {
-      const card = this.state.cards[instance.cardId];
       const stroke = {
+        id: generateId<Stroke>(),
         cardId: instance.cardId,
         points: [],
       };
-      card.strokes.push(stroke);
+
+      this.update((state) => {
+        const card = state.cards[instance.cardId];
+        card.strokes.push(stroke);
+      });
+
       return { stroke, offset: instance };
     } else {
-      const page = this.state.pages[this.currentPage];
+      console.log("createNewStroke on page", instance);
+
       const stroke = {
+        id: generateId<Stroke>(),
         pageId: this.currentPage,
         points: [],
       };
-      page.strokes.push(stroke);
+
+      this.update((state) => {
+        const page = state.pages[this.currentPage];
+        page.strokes.push(stroke);
+      });
+
       return { stroke, offset: { x: 0, y: 0 } };
     }
+  }
+
+  addPointToStroke(stroke: Stroke, point: Point): void {
+    this.update((state) => {
+      if (stroke.pageId) {
+        const mutableStroke = state.pages[stroke.pageId].strokes.find(
+          (s) => s.id === stroke.id
+        );
+        if (!mutableStroke) return;
+        mutableStroke.points.push(point);
+      } else if (stroke.cardId) {
+        const mutableStroke = state.cards[stroke.cardId].strokes.find(
+          (s) => s.id === stroke.id
+        );
+        if (!mutableStroke) return;
+        mutableStroke.points.push(point);
+      }
+    });
   }
 
   render(render: Render) {
@@ -177,7 +242,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001"),
+        fill("#0001")
       );
       render.round_rect(
         instance.x,
@@ -185,7 +250,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5),
+        fillAndStroke("#FFF", "#0002", 0.5)
       );
 
       card.strokes.forEach((s) => {
