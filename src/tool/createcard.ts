@@ -24,7 +24,7 @@ export default class CreateCardTool implements Tool {
     this.state_manager.updateCardSize(this.cardId, width, height);
   }
 
-  onpointerup(position: Point) {
+  onpointerup() {
     this.cardId = null;
   }
 }

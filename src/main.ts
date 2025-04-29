@@ -1,14 +1,11 @@
 import { DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
 import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import tick from "tick";
 import Render from "render";
-import StateManager, { createStateDoc, State } from "state";
-import {
-  syncAllCalendars,
-  getAllCalendars,
-  getEventsOnDay,
-} from "./googlecalendar";
+import StateManager, { getNewEmptyState, State } from "state";
+import tick from "tick";
+import { getEventsOnDay, syncAllCalendars } from "./googlecalendar";
+import "./index.css";
 
 import Input from "input";
 
@@ -23,7 +20,7 @@ let documentId = window.location.hash.slice(1) as DocumentId;
 let handle: DocHandle<State>;
 
 if (!documentId) {
-  handle = createStateDoc(repo);
+  handle = repo.create(getNewEmptyState());
   documentId = handle.documentId;
 
   // Update URL with the new document ID
@@ -39,7 +36,7 @@ console.log(await handle.doc());
 const render = new Render();
 const state_manager = new StateManager(handle);
 
-const input = new Input(state_manager);
+new Input(state_manager);
 
 //const events =
 const today = new Date();

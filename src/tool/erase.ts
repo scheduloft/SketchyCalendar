@@ -1,7 +1,6 @@
-import Tool from "./tool";
 import { Point } from "geom/point";
-import { Vec } from "geom/vec";
-import StateManager, { Id, Card, Stroke } from "state";
+import StateManager from "state";
+import Tool from "./tool";
 
 export default class EraseTool implements Tool {
   state_manager: StateManager;
@@ -22,7 +21,7 @@ export default class EraseTool implements Tool {
     this.state_manager.erase(position);
   }
 
-  onpointerup(position: Point) {
+  onpointerup() {
     this.down = true;
   }
 }

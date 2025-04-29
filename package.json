@@ -3,18 +3,25 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "dist/patchwork.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "push": "vite build --config vite.patchwork.config.ts && jacquard push",
+    "watch": "nodemon --watch src -e js,tsx,ts,tsx,css,json --exec 'vite build --config vite.patchwork.config.ts && jacquard push'"
   },
   "devDependencies": {
-    "vite-plugin-wasm": "^3.4.1",
+    "@patchwork/sdk": "file:../patchwork/sdk",
     "@types/gapi": "^0.0.47",
-    "@types/gapi.client.calendar": "^3.0.12",
-    "@types/google.accounts": "^0.0.15",   
+    "@types/gapi.client.calendar-v3": "^0.0.4",
+    "@types/google.accounts": "^0.0.15",
+    "@types/react": "^19.1.2",
+    "nodemon": "^3.1.10",
     "typescript": "~5.6.2",
     "vite": "^6.3.3",
+    "vite-plugin-top-level-await": "^1.5.0",
+    "vite-plugin-wasm": "^3.4.1",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "dependencies": {
@@ -22,6 +29,7 @@
     "@automerge/automerge-repo-network-websocket": "^1.2.1",
     "@automerge/automerge-repo-react-hooks": "^1.2.1",
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
-    "localforage": "^1.10.0"
+    "localforage": "^1.10.0",
+    "react": "^18.3.1"
   }
 }

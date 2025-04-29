@@ -1,6 +1,6 @@
-import Tool from "./tool";
 import { Point } from "geom/point";
-import StateManager, { Id, CardInstance } from "state";
+import StateManager, { CardInstance } from "state";
+import Tool from "./tool";
 
 export default class CopyCardTool implements Tool {
   state_manager: StateManager;
@@ -17,7 +17,7 @@ export default class CopyCardTool implements Tool {
 
     this.instance = this.state_manager.createCardInstance(
       template.cardId,
-      position,
+      position
     );
   }
 
@@ -26,7 +26,7 @@ export default class CopyCardTool implements Tool {
     this.state_manager.moveCardInstance(this.instance.id, position);
   }
 
-  onpointerup(position: Point) {
+  onpointerup() {
     this.instance = null;
   }
 }

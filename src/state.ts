@@ -1,12 +1,9 @@
-import * as Automerge from "@automerge/automerge/next";
-import { DocHandle, Repo } from "@automerge/automerge-repo";
+import { DocHandle } from "@automerge/automerge-repo";
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, { fillAndStroke, fill, stroke, font } from "render";
+import Render, { fill, fillAndStroke, stroke } from "render";
 
 import { getEventsOnDay } from "googlecalendar";
-
-const DEBUG = true;
 
 export type Id<T> = string & { __brand: T };
 
@@ -20,7 +17,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10,
+  distance: number = 10
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -58,6 +55,7 @@ export type Page = {
 };
 
 export type State = {
+  title: string;
   cards: Record<Id<Card>, Card>;
   pages: Record<Id<Page>, Page>;
   pageOrder: Array<Id<Page>>;
@@ -69,10 +67,11 @@ function generateId<T>(): Id<T> {
     .substring(2, 15)}` as Id<T>;
 }
 
-export function createStateDoc(repo: Repo): DocHandle<State> {
+export function getNewEmptyState(): State {
   const firstPageId = generateId<Page>();
 
-  return repo.create({
+  return {
+    title: "Untitled Sketchy Calendar",
     cards: {},
     pages: {
       [firstPageId]: {
@@ -82,7 +81,7 @@ export function createStateDoc(repo: Repo): DocHandle<State> {
       },
     },
     pageOrder: [firstPageId],
-  });
+  };
 }
 
 export default class StateManager {
@@ -164,7 +163,7 @@ export default class StateManager {
   moveCardInstance(instanceId: Id<CardInstance>, position: Point): void {
     this.update((state) => {
       const instance = state.pages[this.currentPage].cardInstances.find(
-        (instance) => instance.id === instanceId,
+        (instance) => instance.id === instanceId
       );
       if (!instance) return;
       instance.x = position.x;
@@ -240,13 +239,13 @@ export default class StateManager {
     this.update((state) => {
       if (stroke.pageId) {
         const mutableStroke = state.pages[stroke.pageId].strokes.find(
-          (s) => s.id === stroke.id,
+          (s) => s.id === stroke.id
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
       } else if (stroke.cardId) {
         const mutableStroke = state.cards[stroke.cardId].strokes.find(
-          (s) => s.id === stroke.id,
+          (s) => s.id === stroke.id
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
@@ -270,7 +269,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001"),
+        fill("#0001")
       );
       render.round_rect(
         instance.x,
@@ -278,7 +277,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5),
+        fillAndStroke("#FFF", "#0002", 0.5)
       );
 
       if (card.type == "Calendar") {
@@ -294,7 +293,7 @@ export default class StateManager {
               y,
               instance.x + card.width,
               y,
-              stroke("#AAA", 1),
+              stroke("#AAA", 1)
             );
           }
         }
@@ -311,13 +310,13 @@ export default class StateManager {
             card.width - 50,
             end_offset - start_offset,
             3,
-            fill("#00000011"),
+            fill("#00000011")
           );
           render.text(
             event.summary!,
             instance.x + 60,
             instance.y + start_offset + 15,
-            fill("#AAA"),
+            fill("#AAA")
           );
         }
       }
@@ -335,7 +334,7 @@ function getTimeOffset(
   startHour: number,
   endHour: number,
   offsetStart: number,
-  offsetEnd: number,
+  offsetEnd: number
 ): number {
   const totalMinutesInRange = (endHour - startHour) * 60;
   const minutesSinceStart =
@@ -344,7 +343,7 @@ function getTimeOffset(
   // Clamp minutesSinceStart between 0 and totalMinutesInRange
   const clampedMinutes = Math.max(
     0,
-    Math.min(minutesSinceStart, totalMinutesInRange),
+    Math.min(minutesSinceStart, totalMinutesInRange)
   );
 
   const ratio = clampedMinutes / totalMinutesInRange;

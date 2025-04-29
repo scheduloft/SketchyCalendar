@@ -1,7 +1,7 @@
-import Tool from "./tool";
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import StateManager, { Id, Card, Stroke } from "state";
+import StateManager, { Stroke } from "state";
+import Tool from "./tool";
 
 export default class DrawTool implements Tool {
   state_manager: StateManager;
@@ -28,7 +28,7 @@ export default class DrawTool implements Tool {
     );
   }
 
-  onpointerup(position: Point) {
+  onpointerup() {
     this.stroke = null;
   }
 }
