@@ -67,7 +67,7 @@ const saveAccessToken = ({
     JSON.stringify({
       accessToken,
       expirationTimestamp,
-    })
+    }),
   );
 };
 
@@ -93,9 +93,8 @@ let CACHED_CALENDARS =
   (await store.getItem<Record<string, Calendar>>("CACHED_CALENDARS")) ?? {};
 
 export const syncAllCalendars = async () => {
-  const cachedData = await store.getItem<Record<string, Calendar>>(
-    "CACHED_CALENDARS"
-  );
+  const cachedData =
+    await store.getItem<Record<string, Calendar>>("CACHED_CALENDARS");
 
   const calendars = cachedData ?? {};
 
@@ -113,14 +112,14 @@ export const syncAllCalendars = async () => {
 
     const { nextSyncToken, events } = await syncCalendar(
       id!,
-      calendar.nextSyncToken
+      calendar.nextSyncToken,
     );
 
     console.log(
       "updated",
       Object.keys(events).length,
       "events in",
-      metadata.summary
+      metadata.summary,
     );
 
     calendar.nextSyncToken = nextSyncToken;
@@ -142,7 +141,7 @@ type SyncResult = {
 
 export const syncCalendar = async (
   calendarId: string,
-  nextSyncToken?: string
+  nextSyncToken?: string,
 ): Promise<SyncResult> => {
   await isGoogleApiReady;
 
@@ -186,6 +185,10 @@ export const getAllCalendars = () => {
   return CACHED_CALENDARS;
 };
 
+// Query cache (This breaks updates, but it speeds up re-renders
+// TODO: Invalidate cache when events are updated
+const CACHED_EVENTS = new Map<string, gapi.client.calendar.Event[]>();
+
 export const getEventsOnDay = ({
   calendarIds,
   date,
@@ -193,6 +196,12 @@ export const getEventsOnDay = ({
   calendarIds: string[];
   date: Date;
 }) => {
+  const key = calendarIds.join("_") + "_" + date.toISOString();
+
+  if (CACHED_EVENTS.has(key)) {
+    return CACHED_EVENTS.get(key)!;
+  }
+
   const events = [];
 
   for (const [calendarId, calendar] of Object.entries(getAllCalendars())) {
@@ -222,6 +231,8 @@ export const getEventsOnDay = ({
       }
     }
   }
+
+  CACHED_EVENTS.set(key, events);
 
   return events;
 };
