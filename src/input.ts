@@ -6,15 +6,31 @@ import CopyCardTool from "tool/copycard";
 import EraseTool from "tool/erase";
 import CreateCalendarCardTool from "tool/createcalendarcard";
 
+import Toolbar from "toolbar";
+
 export default class Input {
   state_manager: StateManager;
+  toolbar: Toolbar;
   tool: Tool;
 
-  constructor(state_manager: StateManager) {
+  constructor(state_manager: StateManager, toolbar: Toolbar) {
     this.state_manager = state_manager;
+    this.toolbar = toolbar;
     this.tool = new DrawTool(state_manager);
 
     window.addEventListener("pointerdown", (e) => {
+      if (this.toolbar.click({ x: e.clientX, y: e.clientY })) {
+        const tool = this.toolbar.getCurrentTool();
+        if (tool == "draw") {
+          this.tool = new DrawTool(this.state_manager);
+        } else if (tool == "card") {
+          this.tool = new CreateCardTool(this.state_manager);
+        } else if (tool == "calendar") {
+          this.tool = new CreateCalendarCardTool(this.state_manager);
+        }
+
+        return;
+      }
       this.tool.onpointerdown({ x: e.clientX, y: e.clientY });
     });
 
@@ -24,21 +40,10 @@ export default class Input {
 
     window.addEventListener("pointerup", (e) => {
       this.tool.onpointerup({ x: e.clientX, y: e.clientY });
-      this.tool = new DrawTool(this.state_manager);
+      //this.tool = new DrawTool(this.state_manager);
+      //this.toolbar.reset();
     });
 
-    window.addEventListener("keypress", (e) => {
-      if (e.key == "c") {
-        this.tool = new CreateCardTool(this.state_manager);
-      } else if (e.key == "d") {
-        this.tool = new DrawTool(this.state_manager);
-      } else if (e.key == "t") {
-        this.tool = new CopyCardTool(this.state_manager);
-      } else if (e.key == "e") {
-        this.tool = new EraseTool(this.state_manager);
-      } else if (e.key == "k") {
-        this.tool = new CreateCalendarCardTool(this.state_manager);
-      }
-    });
+    window.addEventListener("keypress", (e) => {});
   }
 }

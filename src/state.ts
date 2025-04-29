@@ -286,7 +286,7 @@ export default class StateManager {
           const hour = i + 8;
           const offset = (card.height / 13) * i;
           const y = instance.y + offset;
-          render.text(`${hour}:00`, instance.x + 10, y + 15, fill("#000"));
+          render.text(`${hour}:00`, instance.x + 10, y + 15, fill("#AAA"));
           if (i > 0) {
             render.line(
               instance.x,

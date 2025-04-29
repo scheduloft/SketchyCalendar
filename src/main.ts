@@ -3,6 +3,7 @@ import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import Render from "render";
 import StateManager, { getNewEmptyState, State } from "state";
+import Toolbar from "toolbar";
 import tick from "tick";
 import { getEventsOnDay, syncAllCalendars } from "./googlecalendar";
 import "./index.css";
@@ -34,14 +35,16 @@ syncAllCalendars();
 console.log(await handle.doc());
 
 const render = new Render();
-const state_manager = new StateManager(handle);
 
-new Input(state_manager);
+const state_manager = new StateManager(handle);
+const toolbar = new Toolbar();
+
+new Input(state_manager, toolbar);
 
 //const events =
 const today = new Date();
 const events = getEventsOnDay({
-  calendarIds: ["marcel.goethals@gmail.com"],
+  calendarIds: [""],
   date: today,
 });
 console.log(events);
@@ -50,4 +53,5 @@ tick((_) => {
   render.clear();
 
   state_manager.render(render);
+  toolbar.render(render);
 });
