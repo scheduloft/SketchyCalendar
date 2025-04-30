@@ -1,6 +1,6 @@
 import Render, { fillAndStroke, fill } from "./render";
 
-export const TOOLS = ["draw", "card", "calendar"];
+export const TOOLS = ["draw", "card", "calendar", "eraser"];
 
 export default class Toolbar {
   activeTool: number = 0;
@@ -13,7 +13,7 @@ export default class Toolbar {
       40,
       TOOLS.length * 40,
       3,
-      fillAndStroke("#FFF", "#0002", 1),
+      fillAndStroke("#FFF", "#0002", 1)
     );
 
     r.round_rect(
@@ -22,7 +22,7 @@ export default class Toolbar {
       36,
       36,
       3,
-      fill("#BBBBFF"),
+      fill("#BBBBFF")
     );
 
     for (let i = 0; i < TOOLS.length; i++) {

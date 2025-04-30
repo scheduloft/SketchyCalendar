@@ -172,17 +172,26 @@ export default class StateManager {
   }
 
   erase(position: Point): void {
-    const instance = this.findCardInstanceAt(position);
-    if (!instance) return;
-
     this.update((state) => {
-      const card = state.cards[instance.cardId];
-      card.strokes.forEach((stroke) => {
-        let offset_points = stroke.points.map((p) => Vec.add(p, instance));
-        if (arePointsNear(position, offset_points)) {
-          card.strokes.splice(card.strokes.indexOf(stroke), 1);
-        }
-      });
+      const instance = this.findCardInstanceAt(position);
+      if (instance) {
+        const card = state.cards[instance.cardId];
+        card.strokes.forEach((stroke) => {
+          let offset_points = stroke.points.map((p) => Vec.add(p, instance));
+          if (arePointsNear(position, offset_points, 5)) {
+            card.strokes.splice(card.strokes.indexOf(stroke), 1);
+          }
+        });
+      } else {
+        state.pages[this.currentPage].strokes.forEach((stroke) => {
+          if (arePointsNear(position, stroke.points)) {
+            state.pages[this.currentPage].strokes.splice(
+              state.pages[this.currentPage].strokes.indexOf(stroke),
+              1
+            );
+          }
+        });
+      }
     });
   }
 

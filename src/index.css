@@ -11,3 +11,8 @@ body {
   -webkit-user-select: none;
   user-select: none;
 }
+
+
+.no-cursor {
+  cursor: none;
+}

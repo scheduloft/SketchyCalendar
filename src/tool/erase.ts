@@ -22,6 +22,6 @@ export default class EraseTool implements Tool {
   }
 
   onpointerup() {
-    this.down = true;
+    this.down = false;
   }
 }

@@ -27,6 +27,8 @@ export default class Input {
           this.tool = new CreateCardTool(this.state_manager);
         } else if (tool == "calendar") {
           this.tool = new CreateCalendarCardTool(this.state_manager);
+        } else if (tool == "eraser") {
+          this.tool = new EraseTool(this.state_manager);
         }
 
         return;

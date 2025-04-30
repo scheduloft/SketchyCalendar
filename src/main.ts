@@ -10,6 +10,11 @@ import "./index.css";
 
 import Input from "input";
 
+// hack detect ipad screen
+if (window.screen.width == 1016 && window.screen.height == 746) {
+  document.body.classList.add("no-cursor");
+}
+
 const repo = new Repo({
   network: [new BrowserWebSocketClientAdapter("wss://sync.automerge.org")],
   storage: new IndexedDBStorageAdapter(),
