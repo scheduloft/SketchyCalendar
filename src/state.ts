@@ -298,6 +298,22 @@ export default class StateManager {
           }
         }
 
+        const isToday =
+          card.props &&
+          new Date(card.props.date).toDateString() == new Date().toDateString();
+
+        if (isToday) {
+          const offset = getTimeOffset(new Date(), 8, 21, 0, card.height);
+
+          render.line(
+            instance.x,
+            instance.y + offset,
+            instance.x + card.width,
+            instance.y + offset,
+            stroke("#cc7474", 1)
+          );
+        }
+
         const events = getEventsOnDay(card.props!);
         for (const event of events) {
           const start = new Date(event.start!.dateTime!);
