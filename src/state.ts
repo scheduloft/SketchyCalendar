@@ -41,6 +41,25 @@ export type Card = {
   };
 };
 
+function cloneCard(card: Card): Card {
+  const cardId = generateId<Card>();
+  return {
+    id: cardId,
+    width: card.width,
+    height: card.height,
+    strokes: card.strokes.map((stroke) => {
+      return {
+        id: stroke.id,
+        cardId: cardId,
+        pageId: undefined,
+        points: stroke.points.map((point) => ({ ...point })),
+      };
+    }),
+    type: card.type,
+    props: card.props,
+  };
+}
+
 export type CardInstance = {
   id: Id<CardInstance>;
   cardId: Id<Card>;
@@ -65,6 +84,18 @@ function generateId<T>(): Id<T> {
   return `${Math.random().toString(36).substring(2, 15)}${Math.random()
     .toString(36)
     .substring(2, 15)}` as Id<T>;
+}
+
+function getCardInstance(
+  state: State,
+  instanceId: Id<CardInstance>,
+): CardInstance | null {
+  for (const page of Object.values(state.pages)) {
+    for (const instance of page.cardInstances) {
+      if (instance.id === instanceId) return instance;
+    }
+  }
+  return null;
 }
 
 export function getNewEmptyState(): State {
@@ -101,6 +132,7 @@ export default class StateManager {
 
   update(callback: (state: State) => void) {
     this.docHandle.change(callback);
+    console.log(this.docHandle.docSync());
   }
 
   createNewCard(position: Point): CardInstance {
@@ -128,6 +160,19 @@ export default class StateManager {
 
   getCard(cardId: Id<Card>): Card | undefined {
     return this.state.cards[cardId];
+  }
+
+  copyCard(cardId: Id<Card>): Card {
+    const card = this.getCard(cardId)!;
+
+    const newCard = cloneCard(card);
+    console.log(newCard);
+
+    this.update((state) => {
+      state.cards[newCard.id] = newCard;
+    });
+
+    return newCard;
   }
 
   // Instances
@@ -178,10 +223,19 @@ export default class StateManager {
 
   moveCardInstance(instanceId: Id<CardInstance>, position: Point): void {
     this.update((state) => {
-      const instance = this.getCardInstance(instanceId);
+      const instance = getCardInstance(state, instanceId);
       if (!instance) return;
       instance.x = position.x;
       instance.y = position.y;
+    });
+  }
+
+  deleteCardInstance(instanceId: Id<CardInstance>): void {
+    this.update((state) => {
+      const instance = getCardInstance(state, instanceId);
+      if (!instance) return;
+      const page = state.pages[this.currentPage];
+      page.cardInstances.splice(page.cardInstances.indexOf(instance), 1);
     });
   }
 

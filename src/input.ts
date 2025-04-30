@@ -50,6 +50,7 @@ export default class Input {
       }
 
       if (this.selection.active()) {
+        this.selection.click({ x: e.clientX, y: e.clientY });
         this.dragging = true;
         return;
       }

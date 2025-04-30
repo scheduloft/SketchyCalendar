@@ -1,7 +1,9 @@
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, { dashedStroke } from "render";
+import Render, { dashedStroke, fill, fillAndStroke } from "render";
 import StateManager, { CardInstance, Id } from "state";
+
+const OPTIONS = ["copy", "transclude", "delete"];
 
 export default class Selection {
   state_manager: StateManager;
@@ -29,6 +31,49 @@ export default class Selection {
     }
   }
 
+  click({ x, y }: Point) {
+    if (!this.active()) return;
+    const inst = this.state_manager.getCardInstance(
+      this.selectedCardInstance!,
+    )!;
+
+    console.log(
+      x < inst.x,
+      x > inst.x + OPTIONS.length * 40,
+      y < inst.y - 50,
+      y > inst.y - 50 + 40,
+    );
+    if (
+      x < inst.x ||
+      x > inst.x + OPTIONS.length * 40 ||
+      y < inst.y - 50 ||
+      y > inst.y - 50 + 40
+    ) {
+      return false;
+    }
+
+    const option = OPTIONS[Math.floor((x - inst.x) / 40)];
+
+    console.log(option);
+    if (option === "copy") {
+      const cardCopy = this.state_manager.copyCard(inst.cardId);
+      const newCardInstance = this.state_manager.createCardInstance(
+        cardCopy.id,
+        Vec.add(inst, { x: 20, y: 20 }),
+      );
+      this.selectedCardInstance = newCardInstance.id;
+    } else if (option === "transclude") {
+      const newCardInstance = this.state_manager.createCardInstance(
+        inst.cardId,
+        Vec.add(inst, { x: 20, y: 20 }),
+      );
+      this.selectedCardInstance = newCardInstance.id;
+    } else if (option === "delete") {
+      this.state_manager.deleteCardInstance(this.selectedCardInstance!);
+      this.selectedCardInstance = null;
+    }
+  }
+
   drag(delta: Vec) {
     const instance = this.state_manager.getCardInstance(
       this.selectedCardInstance!,
@@ -41,11 +86,12 @@ export default class Selection {
 
   render(r: Render) {
     // Selected Card
-    if (this.selectedCardInstance) {
+    if (this.active()) {
       const inst = this.state_manager.getCardInstance(
-        this.selectedCardInstance,
+        this.selectedCardInstance!,
       )!;
 
+      // Draw the selection box
       const card = this.state_manager.getCard(inst.cardId)!;
       r.round_rect(
         inst.x - 4,
@@ -55,6 +101,23 @@ export default class Selection {
         4,
         dashedStroke("blue", 1, [10, 10]),
       );
+
+      // Draw selection the menu
+      const p = Vec.add(inst, { x: 0, y: -50 });
+      r.round_rect(p.x + 2, p.y + 2, OPTIONS.length * 40, 40, 3, fill("#0001"));
+      r.round_rect(
+        p.x,
+        p.y,
+
+        OPTIONS.length * 40,
+        40,
+        3,
+        fillAndStroke("#FFF", "#0002", 1),
+      );
+
+      for (let i = 0; i < OPTIONS.length; i++) {
+        r.image("/img/" + OPTIONS[i] + ".png", { x: p.x + i * 40, y: p.y });
+      }
     }
   }
 }
