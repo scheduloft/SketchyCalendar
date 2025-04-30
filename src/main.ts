@@ -4,6 +4,7 @@ import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-index
 import Render from "render";
 import StateManager, { getNewEmptyState, State } from "state";
 import Toolbar from "toolbar";
+import Selection from "selection";
 import tick from "tick";
 import { getEventsOnDay, syncAllCalendars } from "./googlecalendar";
 import "./index.css";
@@ -43,8 +44,9 @@ const render = new Render();
 
 const state_manager = new StateManager(handle);
 const toolbar = new Toolbar();
+const selection = new Selection(state_manager);
 
-new Input(state_manager, toolbar);
+new Input(state_manager, selection, toolbar);
 
 //const events =
 const today = new Date();
@@ -59,4 +61,5 @@ tick((_) => {
 
   state_manager.render(render);
   toolbar.render(render);
+  selection.render(render);
 });

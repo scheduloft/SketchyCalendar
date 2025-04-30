@@ -1,7 +1,7 @@
 import { DocHandle } from "@automerge/automerge-repo";
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, { fill, fillAndStroke, stroke } from "render";
+import Render, { dashedStroke, fill, fillAndStroke, stroke } from "render";
 
 import { getEventsOnDay } from "googlecalendar";
 
@@ -17,7 +17,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10
+  distance: number = 10,
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -86,10 +86,12 @@ export function getNewEmptyState(): State {
 
 export default class StateManager {
   currentPage: Id<Page>;
+
   docHandle: DocHandle<State>;
 
   constructor(docHandle: DocHandle<State>) {
     this.docHandle = docHandle;
+
     this.currentPage = this.state.pageOrder[0];
   }
 
@@ -117,6 +119,18 @@ export default class StateManager {
     return this.createCardInstance(cardId, position);
   }
 
+  updateCardSize(cardId: Id<Card>, width: number, height: number): void {
+    this.update((state) => {
+      state.cards[cardId].width = width;
+      state.cards[cardId].height = height;
+    });
+  }
+
+  getCard(cardId: Id<Card>): Card | undefined {
+    return this.state.cards[cardId];
+  }
+
+  // Instances
   createNewCalendarCard(position: Point, calendarIds: string[]): CardInstance {
     const cardId = generateId<Card>();
 
@@ -153,18 +167,18 @@ export default class StateManager {
     return instance;
   }
 
-  updateCardSize(cardId: Id<Card>, width: number, height: number): void {
-    this.update((state) => {
-      state.cards[cardId].width = width;
-      state.cards[cardId].height = height;
-    });
+  getCardInstance(instanceId: Id<CardInstance>): CardInstance | null {
+    for (const page of Object.values(this.state.pages)) {
+      for (const instance of page.cardInstances) {
+        if (instance.id === instanceId) return instance;
+      }
+    }
+    return null;
   }
 
   moveCardInstance(instanceId: Id<CardInstance>, position: Point): void {
     this.update((state) => {
-      const instance = state.pages[this.currentPage].cardInstances.find(
-        (instance) => instance.id === instanceId
-      );
+      const instance = this.getCardInstance(instanceId);
       if (!instance) return;
       instance.x = position.x;
       instance.y = position.y;
@@ -187,7 +201,7 @@ export default class StateManager {
           if (arePointsNear(position, stroke.points)) {
             state.pages[this.currentPage].strokes.splice(
               state.pages[this.currentPage].strokes.indexOf(stroke),
-              1
+              1,
             );
           }
         });
@@ -248,13 +262,13 @@ export default class StateManager {
     this.update((state) => {
       if (stroke.pageId) {
         const mutableStroke = state.pages[stroke.pageId].strokes.find(
-          (s) => s.id === stroke.id
+          (s) => s.id === stroke.id,
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
       } else if (stroke.cardId) {
         const mutableStroke = state.cards[stroke.cardId].strokes.find(
-          (s) => s.id === stroke.id
+          (s) => s.id === stroke.id,
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
@@ -278,7 +292,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001")
+        fill("#0001"),
       );
       render.round_rect(
         instance.x,
@@ -286,7 +300,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5)
+        fillAndStroke("#FFF", "#0002", 0.5),
       );
 
       if (card.type == "Calendar") {
@@ -302,7 +316,7 @@ export default class StateManager {
               y,
               instance.x + card.width,
               y,
-              stroke("#AAA", 1)
+              stroke("#AAA", 1),
             );
           }
         }
@@ -319,7 +333,7 @@ export default class StateManager {
             instance.y + offset,
             instance.x + card.width,
             instance.y + offset,
-            stroke("#cc7474", 1)
+            stroke("#cc7474", 1),
           );
         }
 
@@ -335,13 +349,13 @@ export default class StateManager {
             card.width - 50,
             end_offset - start_offset,
             3,
-            fill("#00000011")
+            fill("#00000011"),
           );
           render.text(
             event.summary!,
             instance.x + 60,
             instance.y + start_offset + 15,
-            fill("#AAA")
+            fill("#AAA"),
           );
         }
       }
@@ -359,7 +373,7 @@ function getTimeOffset(
   startHour: number,
   endHour: number,
   offsetStart: number,
-  offsetEnd: number
+  offsetEnd: number,
 ): number {
   const totalMinutesInRange = (endHour - startHour) * 60;
   const minutesSinceStart =
@@ -368,7 +382,7 @@ function getTimeOffset(
   // Clamp minutesSinceStart between 0 and totalMinutesInRange
   const clampedMinutes = Math.max(
     0,
-    Math.min(minutesSinceStart, totalMinutesInRange)
+    Math.min(minutesSinceStart, totalMinutesInRange),
   );
 
   const ratio = clampedMinutes / totalMinutesInRange;
