@@ -56,9 +56,10 @@ export default class Selection {
 
     console.log(option);
     if (option === "copy") {
-      const cardCopy = this.state_manager.copyCard(inst.cardId);
+      const cardCopyId = this.state_manager.copyCard(inst.cardId);
+      console.log("copy", cardCopyId);
       const newCardInstance = this.state_manager.createCardInstance(
-        cardCopy.id,
+        cardCopyId,
         Vec.add(inst, { x: 20, y: 20 }),
       );
       this.selectedCardInstance = newCardInstance.id;

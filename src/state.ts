@@ -162,17 +162,17 @@ export default class StateManager {
     return this.state.cards[cardId];
   }
 
-  copyCard(cardId: Id<Card>): Card {
+  copyCard(cardId: Id<Card>): Id<Card> {
     const card = this.getCard(cardId)!;
 
     const newCard = cloneCard(card);
-    console.log(newCard);
+    const newCardId = newCard.id;
 
     this.update((state) => {
       state.cards[newCard.id] = newCard;
     });
 
-    return newCard;
+    return newCardId;
   }
 
   // Instances
