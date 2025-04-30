@@ -7,34 +7,33 @@ const OPTIONS = ["copy", "transclude", "delete"];
 
 export default class Selection {
   state_manager: StateManager;
-  selectedCardInstance: Id<CardInstance> | null = null;
 
   constructor(state_manager: StateManager) {
     this.state_manager = state_manager;
-    this.selectedCardInstance = null;
+    this.state_manager.selectedCardInstance = null;
   }
 
   clear(): void {
-    this.selectedCardInstance = null;
+    this.state_manager.selectedCardInstance = null;
   }
 
   active(): boolean {
-    return this.selectedCardInstance !== null;
+    return this.state_manager.selectedCardInstance !== null;
   }
 
   selectAtPosition(position: Point) {
     const found = this.state_manager.findCardInstanceAt(position);
     if (found) {
-      this.selectedCardInstance = found.id;
+      this.state_manager.selectedCardInstance = found.id;
     } else {
-      this.selectedCardInstance = null;
+      this.state_manager.selectedCardInstance = null;
     }
   }
 
   click({ x, y }: Point) {
     if (!this.active()) return;
     const inst = this.state_manager.getCardInstance(
-      this.selectedCardInstance!
+      this.state_manager.selectedCardInstance!
     )!;
 
     if (
@@ -56,22 +55,24 @@ export default class Selection {
         cardCopyId,
         Vec.add(inst, { x: 20, y: 20 })
       );
-      this.selectedCardInstance = newCardInstance.id;
+      this.state_manager.selectedCardInstance = newCardInstance.id;
     } else if (option === "transclude") {
       const newCardInstance = this.state_manager.createCardInstance(
         inst.cardId,
         Vec.add(inst, { x: 20, y: 20 })
       );
-      this.selectedCardInstance = newCardInstance.id;
+      this.state_manager.selectedCardInstance = newCardInstance.id;
     } else if (option === "delete") {
-      this.state_manager.deleteCardInstance(this.selectedCardInstance!);
-      this.selectedCardInstance = null;
+      this.state_manager.deleteCardInstance(
+        this.state_manager.selectedCardInstance!
+      );
+      this.state_manager.selectedCardInstance = null;
     }
   }
 
   drag(delta: Vec) {
     const instance = this.state_manager.getCardInstance(
-      this.selectedCardInstance!
+      this.state_manager.selectedCardInstance!
     );
     if (instance) {
       const newPos = Vec.add(instance, delta);
@@ -83,7 +84,7 @@ export default class Selection {
     // Selected Card
     if (this.active()) {
       const inst = this.state_manager.getCardInstance(
-        this.selectedCardInstance!
+        this.state_manager.selectedCardInstance!
       )!;
 
       // Draw the selection box

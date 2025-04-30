@@ -51,13 +51,13 @@ function cloneCard(card: Card): Card {
 export type CardInstance = {
   id: Id<CardInstance>;
   cardId: Id<Card>;
+  pageId: Id<Page>;
   x: number;
   y: number;
 };
 
 export type Page = {
   id: Id<Page>;
-  cardInstances: Array<CardInstance>;
   strokes: Array<Stroke>;
 };
 
@@ -65,6 +65,7 @@ export type State = {
   title: string;
   cards: Record<Id<Card>, Card>;
   pages: Record<Id<Page>, Page>;
+  cardInstances: Record<Id<CardInstance>, CardInstance>;
   pageOrder: Array<Id<Page>>;
 };
 
@@ -74,28 +75,16 @@ function generateId<T>(): Id<T> {
     .substring(2, 15)}` as Id<T>;
 }
 
-function getCardInstance(
-  state: State,
-  instanceId: Id<CardInstance>
-): CardInstance | null {
-  for (const page of Object.values(state.pages)) {
-    for (const instance of page.cardInstances) {
-      if (instance.id === instanceId) return instance;
-    }
-  }
-  return null;
-}
-
 export function getNewEmptyState(): State {
   const firstPageId = generateId<Page>();
 
   return {
     title: "Untitled Sketchy Calendar",
     cards: {},
+    cardInstances: {},
     pages: {
       [firstPageId]: {
         id: firstPageId,
-        cardInstances: [],
         strokes: [],
       },
     },
@@ -105,7 +94,7 @@ export function getNewEmptyState(): State {
 
 export default class StateManager {
   currentPage: Id<Page>;
-
+  selectedCardInstance: Id<CardInstance> | null = null;
   docHandle: DocHandle<State>;
 
   constructor(docHandle: DocHandle<State>) {
@@ -125,10 +114,10 @@ export default class StateManager {
   gotoNextPage() {
     const currentIndex = this.state.pageOrder.indexOf(this.currentPage);
     const nextIndex = currentIndex + 1;
-    let nextPage = this.state.pageOrder[nextIndex];
+    let nextPageId = this.state.pageOrder[nextIndex];
 
     // create next page if needed
-    if (!nextPage) {
+    if (!nextPageId) {
       const newPage = {
         id: generateId<Page>(),
         cardInstances: [],
@@ -140,10 +129,19 @@ export default class StateManager {
         state.pageOrder.push(newPage.id);
       });
 
-      nextPage = newPage.id;
+      nextPageId = newPage.id;
     }
 
-    this.currentPage = nextPage;
+    // move selection between pages
+    const selectedCardInstanceId = this.selectedCardInstance;
+    if (selectedCardInstanceId) {
+      this.update((state) => {
+        const cardInstance = state.cardInstances[selectedCardInstanceId];
+        cardInstance.pageId = nextPageId;
+      });
+    }
+
+    this.currentPage = nextPageId;
   }
 
   gotoPrevPage() {
@@ -152,7 +150,18 @@ export default class StateManager {
       return;
     }
 
-    this.currentPage = this.state.pageOrder[currentIndex - 1];
+    const prevPageId = this.state.pageOrder[currentIndex - 1];
+
+    // move selection between pages
+    const selectedCardInstanceId = this.selectedCardInstance;
+    if (selectedCardInstanceId) {
+      this.update((state) => {
+        const cardInstance = state.cardInstances[selectedCardInstanceId];
+        cardInstance.pageId = prevPageId;
+      });
+    }
+
+    this.currentPage = prevPageId;
   }
 
   createNewCard(position: Point): CardInstance {
@@ -221,29 +230,21 @@ export default class StateManager {
     const instance = {
       id: instanceId,
       cardId,
+      pageId: this.currentPage,
       x: position.x,
       y: position.y,
     };
 
     this.update((state) => {
-      state.pages[this.currentPage].cardInstances.push(instance);
+      state.cardInstances[instanceId] = instance;
     });
 
     return instance;
   }
 
-  getCardInstance(instanceId: Id<CardInstance>): CardInstance | null {
-    for (const page of Object.values(this.state.pages)) {
-      for (const instance of page.cardInstances) {
-        if (instance.id === instanceId) return instance;
-      }
-    }
-    return null;
-  }
-
   moveCardInstance(instanceId: Id<CardInstance>, position: Point): void {
     this.update((state) => {
-      const instance = getCardInstance(state, instanceId);
+      const instance = state.cardInstances[instanceId];
       if (!instance) return;
       instance.x = position.x;
       instance.y = position.y;
@@ -252,10 +253,9 @@ export default class StateManager {
 
   deleteCardInstance(instanceId: Id<CardInstance>): void {
     this.update((state) => {
-      const instance = getCardInstance(state, instanceId);
+      const instance = state.cardInstances[instanceId];
       if (!instance) return;
-      const page = state.pages[this.currentPage];
-      page.cardInstances.splice(page.cardInstances.indexOf(instance), 1);
+      delete state.cardInstances[instanceId];
     });
   }
 
@@ -283,10 +283,19 @@ export default class StateManager {
     });
   }
 
+  cardInstancesOnCurrentPage(): Array<CardInstance> {
+    return Object.values(this.state.cardInstances).filter(
+      (instance) => instance.pageId === this.currentPage
+    );
+  }
+
+  getCardInstance(instanceId: Id<CardInstance>): CardInstance | null {
+    return this.state.cardInstances[instanceId];
+  }
+
   findCardInstanceAt(position: Point): CardInstance | null {
-    const currentPage = this.state.pages[this.currentPage];
     return (
-      currentPage.cardInstances.find((instance) => {
+      this.cardInstancesOnCurrentPage().find((instance) => {
         const card = this.state.cards[instance.cardId];
         return (
           position.x >= instance.x &&
@@ -365,7 +374,7 @@ export default class StateManager {
       render.poly(s.points, stroke("#000", 1), false);
     });
 
-    currentPage.cardInstances.forEach((instance) => {
+    this.cardInstancesOnCurrentPage().forEach((instance) => {
       const card = this.state.cards[instance.cardId];
 
       render.round_rect(
