@@ -20,7 +20,7 @@ export default class Input {
   constructor(
     state_manager: StateManager,
     selection: Selection,
-    toolbar: Toolbar,
+    toolbar: Toolbar
   ) {
     this.state_manager = state_manager;
     this.toolbar = toolbar;
@@ -75,6 +75,10 @@ export default class Input {
       }
     });
 
-    window.addEventListener("keypress", (e) => {});
+    window.addEventListener("keydown", (e) => {
+      if (e.key == "Escape") {
+        this.selection.clear();
+      }
+    });
   }
 }
