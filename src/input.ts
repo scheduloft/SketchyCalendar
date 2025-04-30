@@ -76,8 +76,12 @@ export default class Input {
     });
 
     window.addEventListener("keydown", (e) => {
-      if (e.key == "Escape") {
+      if (e.key === "Escape") {
         this.selection.clear();
+      } else if (e.key === "ArrowRight") {
+        this.state_manager.gotoNextPage();
+      } else if (e.key === "ArrowLeft") {
+        this.state_manager.gotoPrevPage();
       }
     });
   }

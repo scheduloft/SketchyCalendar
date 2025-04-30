@@ -1,7 +1,7 @@
 import { DocHandle } from "@automerge/automerge-repo";
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, { fill, fillAndStroke, stroke } from "render";
+import Render, { fill, fillAndStroke, font, stroke } from "render";
 
 import { getEventsOnDay } from "googlecalendar";
 
@@ -120,6 +120,39 @@ export default class StateManager {
 
   update(callback: (state: State) => void) {
     this.docHandle.change(callback);
+  }
+
+  gotoNextPage() {
+    const currentIndex = this.state.pageOrder.indexOf(this.currentPage);
+    const nextIndex = currentIndex + 1;
+    let nextPage = this.state.pageOrder[nextIndex];
+
+    // create next page if needed
+    if (!nextPage) {
+      const newPage = {
+        id: generateId<Page>(),
+        cardInstances: [],
+        strokes: [],
+      };
+
+      this.update((state) => {
+        state.pages[newPage.id] = newPage;
+        state.pageOrder.push(newPage.id);
+      });
+
+      nextPage = newPage.id;
+    }
+
+    this.currentPage = nextPage;
+  }
+
+  gotoPrevPage() {
+    const currentIndex = this.state.pageOrder.indexOf(this.currentPage);
+    if (currentIndex == 0) {
+      return;
+    }
+
+    this.currentPage = this.state.pageOrder[currentIndex - 1];
   }
 
   createNewCard(position: Point): CardInstance {
@@ -319,6 +352,14 @@ export default class StateManager {
 
   render(render: Render) {
     const currentPage = this.state.pages[this.currentPage];
+    const pageNumber = this.state.pageOrder.indexOf(this.currentPage) + 1;
+
+    render.text(
+      pageNumber.toString(),
+      render.width - 30,
+      30,
+      font("20px Arial", "gray")
+    );
 
     currentPage.strokes.forEach((s) => {
       render.poly(s.points, stroke("#000", 1), false);
