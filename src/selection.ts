@@ -34,15 +34,9 @@ export default class Selection {
   click({ x, y }: Point) {
     if (!this.active()) return;
     const inst = this.state_manager.getCardInstance(
-      this.selectedCardInstance!,
+      this.selectedCardInstance!
     )!;
 
-    console.log(
-      x < inst.x,
-      x > inst.x + OPTIONS.length * 40,
-      y < inst.y - 50,
-      y > inst.y - 50 + 40,
-    );
     if (
       x < inst.x ||
       x > inst.x + OPTIONS.length * 40 ||
@@ -60,13 +54,13 @@ export default class Selection {
       console.log("copy", cardCopyId);
       const newCardInstance = this.state_manager.createCardInstance(
         cardCopyId,
-        Vec.add(inst, { x: 20, y: 20 }),
+        Vec.add(inst, { x: 20, y: 20 })
       );
       this.selectedCardInstance = newCardInstance.id;
     } else if (option === "transclude") {
       const newCardInstance = this.state_manager.createCardInstance(
         inst.cardId,
-        Vec.add(inst, { x: 20, y: 20 }),
+        Vec.add(inst, { x: 20, y: 20 })
       );
       this.selectedCardInstance = newCardInstance.id;
     } else if (option === "delete") {
@@ -77,7 +71,7 @@ export default class Selection {
 
   drag(delta: Vec) {
     const instance = this.state_manager.getCardInstance(
-      this.selectedCardInstance!,
+      this.selectedCardInstance!
     );
     if (instance) {
       const newPos = Vec.add(instance, delta);
@@ -89,7 +83,7 @@ export default class Selection {
     // Selected Card
     if (this.active()) {
       const inst = this.state_manager.getCardInstance(
-        this.selectedCardInstance!,
+        this.selectedCardInstance!
       )!;
 
       // Draw the selection box
@@ -100,7 +94,7 @@ export default class Selection {
         card.width + 8,
         card.height + 8,
         4,
-        dashedStroke("blue", 1, [10, 10]),
+        dashedStroke("blue", 1, [10, 10])
       );
 
       // Draw selection the menu
@@ -113,7 +107,7 @@ export default class Selection {
         OPTIONS.length * 40,
         40,
         3,
-        fillAndStroke("#FFF", "#0002", 1),
+        fillAndStroke("#FFF", "#0002", 1)
       );
 
       for (let i = 0; i < OPTIONS.length; i++) {

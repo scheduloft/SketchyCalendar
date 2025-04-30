@@ -1,7 +1,7 @@
 import { DocHandle } from "@automerge/automerge-repo";
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, { dashedStroke, fill, fillAndStroke, stroke } from "render";
+import Render, { fill, fillAndStroke, stroke } from "render";
 
 import { getEventsOnDay } from "googlecalendar";
 
@@ -17,7 +17,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10,
+  distance: number = 10
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -42,22 +42,10 @@ export type Card = {
 };
 
 function cloneCard(card: Card): Card {
-  const cardId = generateId<Card>();
-  return {
-    id: cardId,
-    width: card.width,
-    height: card.height,
-    strokes: card.strokes.map((stroke) => {
-      return {
-        id: stroke.id,
-        cardId: cardId,
-        pageId: undefined,
-        points: stroke.points.map((point) => ({ ...point })),
-      };
-    }),
-    type: card.type,
-    props: card.props,
-  };
+  const newCard = structuredClone(card);
+  newCard.id = generateId<Card>();
+
+  return newCard;
 }
 
 export type CardInstance = {
@@ -88,7 +76,7 @@ function generateId<T>(): Id<T> {
 
 function getCardInstance(
   state: State,
-  instanceId: Id<CardInstance>,
+  instanceId: Id<CardInstance>
 ): CardInstance | null {
   for (const page of Object.values(state.pages)) {
     for (const instance of page.cardInstances) {
@@ -132,7 +120,6 @@ export default class StateManager {
 
   update(callback: (state: State) => void) {
     this.docHandle.change(callback);
-    console.log(this.docHandle.docSync());
   }
 
   createNewCard(position: Point): CardInstance {
@@ -255,7 +242,7 @@ export default class StateManager {
           if (arePointsNear(position, stroke.points)) {
             state.pages[this.currentPage].strokes.splice(
               state.pages[this.currentPage].strokes.indexOf(stroke),
-              1,
+              1
             );
           }
         });
@@ -316,13 +303,13 @@ export default class StateManager {
     this.update((state) => {
       if (stroke.pageId) {
         const mutableStroke = state.pages[stroke.pageId].strokes.find(
-          (s) => s.id === stroke.id,
+          (s) => s.id === stroke.id
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
       } else if (stroke.cardId) {
         const mutableStroke = state.cards[stroke.cardId].strokes.find(
-          (s) => s.id === stroke.id,
+          (s) => s.id === stroke.id
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
@@ -346,7 +333,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001"),
+        fill("#0001")
       );
       render.round_rect(
         instance.x,
@@ -354,7 +341,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5),
+        fillAndStroke("#FFF", "#0002", 0.5)
       );
 
       if (card.type == "Calendar") {
@@ -370,7 +357,7 @@ export default class StateManager {
               y,
               instance.x + card.width,
               y,
-              stroke("#AAA", 1),
+              stroke("#AAA", 1)
             );
           }
         }
@@ -387,7 +374,7 @@ export default class StateManager {
             instance.y + offset,
             instance.x + card.width,
             instance.y + offset,
-            stroke("#cc7474", 1),
+            stroke("#cc7474", 1)
           );
         }
 
@@ -403,13 +390,13 @@ export default class StateManager {
             card.width - 50,
             end_offset - start_offset,
             3,
-            fill("#00000011"),
+            fill("#00000011")
           );
           render.text(
             event.summary!,
             instance.x + 60,
             instance.y + start_offset + 15,
-            fill("#AAA"),
+            fill("#AAA")
           );
         }
       }
@@ -427,7 +414,7 @@ function getTimeOffset(
   startHour: number,
   endHour: number,
   offsetStart: number,
-  offsetEnd: number,
+  offsetEnd: number
 ): number {
   const totalMinutesInRange = (endHour - startHour) * 60;
   const minutesSinceStart =
@@ -436,7 +423,7 @@ function getTimeOffset(
   // Clamp minutesSinceStart between 0 and totalMinutesInRange
   const clampedMinutes = Math.max(
     0,
-    Math.min(minutesSinceStart, totalMinutesInRange),
+    Math.min(minutesSinceStart, totalMinutesInRange)
   );
 
   const ratio = clampedMinutes / totalMinutesInRange;
