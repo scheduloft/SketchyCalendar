@@ -212,7 +212,7 @@ export default class StateManager {
       state.cards[cardId] = {
         id: cardId,
         width: 200,
-        height: 700,
+        height: 750,
         strokes: [],
         type: "Calendar",
         props: {
@@ -395,29 +395,45 @@ export default class StateManager {
       );
 
       if (card.type == "Calendar") {
+        const date = new Date(card.props!.date);
+
         // Draw calendar grid
+        const headerHeight = 50;
+        const calendarHeight = card.height - headerHeight;
+
         for (let i = 0; i < 13; i++) {
           const hour = i + 8;
-          const offset = (card.height / 13) * i;
+          const offset = (calendarHeight / 13) * i + headerHeight;
           const y = instance.y + offset;
           render.text(`${hour}:00`, instance.x + 10, y + 15, fill("#AAA"));
-          if (i > 0) {
-            render.line(
-              instance.x,
-              y,
-              instance.x + card.width,
-              y,
-              stroke("#AAA", 1)
-            );
-          }
+
+          render.line(
+            instance.x,
+            y,
+            instance.x + card.width,
+            y,
+            stroke("#AAA", 1)
+          );
         }
+
+        render.text(
+          date.toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }),
+          instance.x + 10,
+          instance.y + 30,
+          font("18px Arial", "gray")
+        );
 
         const isToday =
           card.props &&
           new Date(card.props.date).toDateString() == new Date().toDateString();
 
         if (isToday) {
-          const offset = getTimeOffset(new Date(), 8, 21, 0, card.height);
+          const offset =
+            headerHeight + getTimeOffset(new Date(), 8, 21, 0, calendarHeight);
 
           render.line(
             instance.x,
@@ -431,9 +447,11 @@ export default class StateManager {
         const events = getEventsOnDay(card.props!);
         for (const event of events) {
           const start = new Date(event.start!.dateTime!);
-          const start_offset = getTimeOffset(start, 8, 21, 0, card.height);
+          const start_offset =
+            headerHeight + getTimeOffset(start, 8, 21, 0, calendarHeight);
           const end = new Date(event.end!.dateTime!);
-          const end_offset = getTimeOffset(end, 8, 21, 0, card.height);
+          const end_offset =
+            headerHeight + getTimeOffset(end, 8, 21, 0, calendarHeight);
           render.round_rect(
             instance.x + 50,
             instance.y + start_offset,
