@@ -15,10 +15,11 @@ export default class CopyCardTool implements Tool {
     const template = this.state_manager.findCardInstanceAt(position);
     if (!template) return;
 
-    this.instance = this.state_manager.createCardInstance(
-      template.cardId,
-      position
-    );
+    this.instance = this.state_manager.createCardInstance({
+      cardId: template.cardId,
+      position,
+      linkToCardInstanceId: template.id,
+    });
   }
 
   onpointermove(position: Point) {

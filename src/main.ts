@@ -46,9 +46,6 @@ const state_manager = new StateManager(handle);
 const toolbar = new Toolbar();
 const selection = new Selection(state_manager);
 
-// todo: selection and state manager depend on each other maybe they should be just one thing?
-state_manager.selection = selection;
-
 new Input(state_manager, selection, toolbar);
 
 //const events =

@@ -1,7 +1,7 @@
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
 import Render, { dashedStroke, fill, fillAndStroke } from "render";
-import StateManager, { CardInstance, Id } from "state";
+import StateManager from "state";
 
 const OPTIONS = ["copy", "transclude", "delete"];
 
@@ -31,6 +31,7 @@ export default class Selection {
   }
 
   click({ x, y }: Point) {
+    console.log("click", x, y);
     if (!this.active()) return;
     const inst = this.state_manager.getCardInstance(
       this.state_manager.selectedCardInstance!
@@ -51,16 +52,17 @@ export default class Selection {
     if (option === "copy") {
       const cardCopyId = this.state_manager.copyCard(inst.cardId);
       console.log("copy", cardCopyId);
-      const newCardInstance = this.state_manager.createCardInstance(
-        cardCopyId,
-        Vec.add(inst, { x: 20, y: 20 })
-      );
+      const newCardInstance = this.state_manager.createCardInstance({
+        cardId: cardCopyId,
+        position: Vec.add(inst, { x: 20, y: 20 }),
+      });
       this.state_manager.selectedCardInstance = newCardInstance.id;
     } else if (option === "transclude") {
-      const newCardInstance = this.state_manager.createCardInstance(
-        inst.cardId,
-        Vec.add(inst, { x: 20, y: 20 })
-      );
+      const newCardInstance = this.state_manager.createCardInstance({
+        cardId: inst.cardId,
+        position: Vec.add(inst, { x: 20, y: 20 }),
+        linkToCardInstanceId: inst.id,
+      });
       this.state_manager.selectedCardInstance = newCardInstance.id;
     } else if (option === "delete") {
       this.state_manager.deleteCardInstance(

@@ -43,6 +43,24 @@ export default class Input {
         return;
       }
 
+      if (e.metaKey) {
+        const inst = this.state_manager.findCardInstanceAt({
+          x: e.clientX,
+          y: e.clientY,
+        });
+
+        if (inst && inst.linkToCardInstanceId) {
+          const linkedInstance = this.state_manager.getCardInstance(
+            inst.linkToCardInstanceId
+          );
+
+          if (linkedInstance) {
+            this.state_manager.gotoPage(linkedInstance.pageId);
+          }
+        }
+        return;
+      }
+
       // Handle Selection
       if (e.shiftKey) {
         this.selection.selectAtPosition({ x: e.clientX, y: e.clientY });

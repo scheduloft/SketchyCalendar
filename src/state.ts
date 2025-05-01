@@ -52,6 +52,7 @@ export type CardInstance = {
   id: Id<CardInstance>;
   cardId: Id<Card>;
   pageId: Id<Page>;
+  linkToCardInstanceId?: Id<CardInstance>;
   x: number;
   y: number;
 };
@@ -111,6 +112,19 @@ export default class StateManager {
     this.docHandle.change(callback);
   }
 
+  gotoPage(pageId: Id<Page>) {
+    // move selection between pages
+    const selectedCardInstanceId = this.selectedCardInstance;
+    if (selectedCardInstanceId) {
+      this.update((state) => {
+        const cardInstance = state.cardInstances[selectedCardInstanceId];
+        cardInstance.pageId = pageId;
+      });
+    }
+
+    this.currentPage = pageId;
+  }
+
   gotoNextPage() {
     const currentIndex = this.state.pageOrder.indexOf(this.currentPage);
     const nextIndex = currentIndex + 1;
@@ -132,16 +146,7 @@ export default class StateManager {
       nextPageId = newPage.id;
     }
 
-    // move selection between pages
-    const selectedCardInstanceId = this.selectedCardInstance;
-    if (selectedCardInstanceId) {
-      this.update((state) => {
-        const cardInstance = state.cardInstances[selectedCardInstanceId];
-        cardInstance.pageId = nextPageId;
-      });
-    }
-
-    this.currentPage = nextPageId;
+    this.gotoPage(nextPageId);
   }
 
   gotoPrevPage() {
@@ -152,16 +157,7 @@ export default class StateManager {
 
     const prevPageId = this.state.pageOrder[currentIndex - 1];
 
-    // move selection between pages
-    const selectedCardInstanceId = this.selectedCardInstance;
-    if (selectedCardInstanceId) {
-      this.update((state) => {
-        const cardInstance = state.cardInstances[selectedCardInstanceId];
-        cardInstance.pageId = prevPageId;
-      });
-    }
-
-    this.currentPage = prevPageId;
+    this.gotoPage(prevPageId);
   }
 
   createNewCard(position: Point): CardInstance {
@@ -177,7 +173,10 @@ export default class StateManager {
       };
     });
 
-    return this.createCardInstance(cardId, position);
+    return this.createCardInstance({
+      cardId,
+      position,
+    });
   }
 
   updateCardSize(cardId: Id<Card>, width: number, height: number): void {
@@ -222,18 +221,33 @@ export default class StateManager {
       };
     });
 
-    return this.createCardInstance(cardId, position);
+    return this.createCardInstance({
+      cardId,
+      position,
+    });
   }
 
-  createCardInstance(cardId: Id<Card>, position: Point): CardInstance {
+  createCardInstance({
+    cardId,
+    position,
+    linkToCardInstanceId,
+  }: {
+    cardId: Id<Card>;
+    position: Point;
+    linkToCardInstanceId?: Id<CardInstance>;
+  }): CardInstance {
     const instanceId = generateId<CardInstance>();
-    const instance = {
+    const instance: CardInstance = {
       id: instanceId,
       cardId,
       pageId: this.currentPage,
       x: position.x,
       y: position.y,
     };
+
+    if (linkToCardInstanceId) {
+      instance.linkToCardInstanceId = linkToCardInstanceId;
+    }
 
     this.update((state) => {
       state.cardInstances[instanceId] = instance;
