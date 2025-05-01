@@ -408,6 +408,19 @@ export default class StateManager {
         fillAndStroke("#FFF", "#0002", 0.5)
       );
 
+      if (instance.linkToCardInstanceId) {
+        const linkedInstance = this.getCardInstance(
+          instance.linkToCardInstanceId
+        );
+
+        if (linkedInstance) {
+          render.image("/img/transclude-light.png", {
+            x: instance.x + card.width - 40,
+            y: instance.y,
+          });
+        }
+      }
+
       if (card.type == "Calendar") {
         const date = new Date(card.props!.date);
 

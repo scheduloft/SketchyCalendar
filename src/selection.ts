@@ -31,7 +31,6 @@ export default class Selection {
   }
 
   click({ x, y }: Point) {
-    console.log("click", x, y);
     if (!this.active()) return;
     const inst = this.state_manager.getCardInstance(
       this.state_manager.selectedCardInstance!

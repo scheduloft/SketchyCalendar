@@ -43,13 +43,27 @@ export default class Input {
         return;
       }
 
+      // handle transclusion link click
       if (e.metaKey) {
         const inst = this.state_manager.findCardInstanceAt({
           x: e.clientX,
           y: e.clientY,
         });
 
-        if (inst && inst.linkToCardInstanceId) {
+        if (!inst || !inst.linkToCardInstanceId) return;
+
+        const linkedInstance = this.state_manager.getCardInstance(
+          inst.linkToCardInstanceId
+        );
+
+        if (!linkedInstance) return;
+
+        const card = this.state_manager.getCard(inst.cardId)!;
+        const isInTopLeft =
+          e.clientX - inst.x - card.width + 40 > 0 && e.clientY - inst.y < 40;
+
+        // is click in the top right corner of the card?
+        if (isInTopLeft) {
           const linkedInstance = this.state_manager.getCardInstance(
             inst.linkToCardInstanceId
           );
@@ -58,7 +72,6 @@ export default class Input {
             this.state_manager.gotoPage(linkedInstance.pageId);
           }
         }
-        return;
       }
 
       // Handle Selection
