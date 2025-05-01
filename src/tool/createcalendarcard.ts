@@ -13,9 +13,7 @@ export default class CreateCalendarCardTool implements Tool {
   }
 
   onpointerdown(position: Point) {
-    this.cardId = this.state_manager.createNewCalendarCard(position, [
-      "marcel.goethals@gmail.com",
-    ]).cardId;
+    this.cardId = this.state_manager.createNewCalendarCard(position, []).cardId;
     this.downPos = position;
   }
 

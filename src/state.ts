@@ -17,7 +17,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10
+  distance: number = 10,
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -203,6 +203,29 @@ export default class StateManager {
     return newCardId;
   }
 
+  updateCardDate(cardId: Id<Card>, date: Date): void {
+    this.update((state) => {
+      state.cards[cardId].props!.date = date;
+    });
+  }
+
+  updateCardCalendar(
+    cardId: Id<Card>,
+    calendarId: string,
+    active: boolean,
+  ): void {
+    this.update((state) => {
+      const card = state.cards[cardId];
+      if (active) {
+        card.props!.calendarIds.push(calendarId);
+      } else {
+        card.props!.calendarIds = card.props!.calendarIds.filter(
+          (id) => id !== calendarId,
+        );
+      }
+    });
+  }
+
   // Instances
   createNewCalendarCard(position: Point, calendarIds: string[]): CardInstance {
     const cardId = generateId<Card>();
@@ -289,7 +312,7 @@ export default class StateManager {
           if (arePointsNear(position, stroke.points)) {
             state.pages[this.currentPage].strokes.splice(
               state.pages[this.currentPage].strokes.indexOf(stroke),
-              1
+              1,
             );
           }
         });
@@ -299,7 +322,7 @@ export default class StateManager {
 
   cardInstancesOnCurrentPage(): Array<CardInstance> {
     return Object.values(this.state.cardInstances).filter(
-      (instance) => instance.pageId === this.currentPage
+      (instance) => instance.pageId === this.currentPage,
     );
   }
 
@@ -359,13 +382,13 @@ export default class StateManager {
     this.update((state) => {
       if (stroke.pageId) {
         const mutableStroke = state.pages[stroke.pageId].strokes.find(
-          (s) => s.id === stroke.id
+          (s) => s.id === stroke.id,
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
       } else if (stroke.cardId) {
         const mutableStroke = state.cards[stroke.cardId].strokes.find(
-          (s) => s.id === stroke.id
+          (s) => s.id === stroke.id,
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
@@ -381,7 +404,7 @@ export default class StateManager {
       pageNumber.toString(),
       render.width - 30,
       30,
-      font("20px Arial", "gray")
+      font("20px Arial", "gray"),
     );
 
     currentPage.strokes.forEach((s) => {
@@ -397,7 +420,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001")
+        fill("#0001"),
       );
       render.round_rect(
         instance.x,
@@ -405,7 +428,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5)
+        fillAndStroke("#FFF", "#0002", 0.5),
       );
 
       if (instance.linkToCardInstanceId) {
@@ -439,7 +462,7 @@ export default class StateManager {
             y,
             instance.x + card.width,
             y,
-            stroke("#AAA", 1)
+            stroke("#AAA", 1),
           );
         }
 
@@ -451,7 +474,7 @@ export default class StateManager {
           }),
           instance.x + 10,
           instance.y + 30,
-          font("18px Arial", "gray")
+          font("18px Arial", "gray"),
         );
 
         const isToday =
@@ -467,7 +490,7 @@ export default class StateManager {
             instance.y + offset,
             instance.x + card.width,
             instance.y + offset,
-            stroke("#cc7474", 1)
+            stroke("#cc7474", 1),
           );
         }
 
@@ -485,13 +508,13 @@ export default class StateManager {
             card.width - 50,
             end_offset - start_offset,
             3,
-            fill("#00000011")
+            fill("#00000011"),
           );
           render.text(
             event.summary!,
             instance.x + 60,
             instance.y + start_offset + 15,
-            fill("#AAA")
+            fill("#AAA"),
           );
         }
       }
@@ -509,7 +532,7 @@ function getTimeOffset(
   startHour: number,
   endHour: number,
   offsetStart: number,
-  offsetEnd: number
+  offsetEnd: number,
 ): number {
   const totalMinutesInRange = (endHour - startHour) * 60;
   const minutesSinceStart =
@@ -518,7 +541,7 @@ function getTimeOffset(
   // Clamp minutesSinceStart between 0 and totalMinutesInRange
   const clampedMinutes = Math.max(
     0,
-    Math.min(minutesSinceStart, totalMinutesInRange)
+    Math.min(minutesSinceStart, totalMinutesInRange),
   );
 
   const ratio = clampedMinutes / totalMinutesInRange;

@@ -6,7 +6,11 @@ import StateManager, { getNewEmptyState, State } from "state";
 import Toolbar from "toolbar";
 import Selection from "selection";
 import tick from "tick";
-import { getEventsOnDay, syncAllCalendars } from "./googlecalendar";
+import {
+  getEventsOnDay,
+  syncAllCalendars,
+  getAllCalendars,
+} from "./googlecalendar";
 import "./index.css";
 
 import Input from "input";
