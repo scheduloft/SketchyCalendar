@@ -28,6 +28,11 @@ export default class Input {
     this.tool = new DrawTool(state_manager, "pen_black");
 
     window.addEventListener("pointerdown", (e) => {
+      // @ts-ignore: Ignore events that aren't on the canvas
+      if (e.target.nodeName !== "CANVAS") {
+        return;
+      }
+
       // Handle Toolbar Click
       if (this.toolbar.click({ x: e.clientX, y: e.clientY })) {
         const tool = this.toolbar.getCurrentTool();
