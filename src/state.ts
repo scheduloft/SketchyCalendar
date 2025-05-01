@@ -433,7 +433,7 @@ export default class StateManager {
 
       if (instance.linkToCardInstanceId) {
         const linkedInstance = this.getCardInstance(
-          instance.linkToCardInstanceId
+          instance.linkToCardInstanceId,
         );
 
         if (linkedInstance) {
@@ -448,7 +448,7 @@ export default class StateManager {
         const date = new Date(card.props!.date);
 
         // Draw calendar grid
-        const headerHeight = 50;
+        const headerHeight = 150;
         const calendarHeight = card.height - headerHeight;
 
         for (let i = 0; i < 13; i++) {

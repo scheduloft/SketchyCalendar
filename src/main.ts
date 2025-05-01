@@ -55,7 +55,7 @@ new Input(state_manager, selection, toolbar);
 //const events =
 const today = new Date();
 const events = getEventsOnDay({
-  calendarIds: [""],
+  calendarIds: [],
   date: today,
 });
 console.log(events);
