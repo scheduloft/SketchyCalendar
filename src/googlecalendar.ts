@@ -68,7 +68,7 @@ const saveAccessToken = ({
     JSON.stringify({
       accessToken,
       expirationTimestamp,
-    })
+    }),
   );
 };
 
@@ -94,9 +94,8 @@ let CACHED_CALENDARS =
   (await store.getItem<Record<string, Calendar>>("CACHED_CALENDARS")) ?? {};
 
 export const syncAllCalendars = async () => {
-  const cachedData = await store.getItem<Record<string, Calendar>>(
-    "CACHED_CALENDARS"
-  );
+  const cachedData =
+    await store.getItem<Record<string, Calendar>>("CACHED_CALENDARS");
 
   const calendars = cachedData ?? {};
 
@@ -114,14 +113,14 @@ export const syncAllCalendars = async () => {
 
     const { nextSyncToken, events } = await syncCalendar(
       id!,
-      calendar.nextSyncToken
+      calendar.nextSyncToken,
     );
 
     console.log(
       "updated",
       Object.keys(events).length,
       "events in",
-      metadata.summary
+      metadata.summary,
     );
 
     calendar.nextSyncToken = nextSyncToken;
@@ -132,6 +131,7 @@ export const syncAllCalendars = async () => {
   }
 
   CACHED_CALENDARS = calendars;
+  CACHED_EVENTS.clear();
 
   await store.setItem<Record<string, Calendar>>("CACHED_CALENDARS", calendars);
 };
@@ -143,7 +143,7 @@ type SyncResult = {
 
 export const syncCalendar = async (
   calendarId: string,
-  nextSyncToken?: string
+  nextSyncToken?: string,
 ): Promise<SyncResult> => {
   await isGoogleApiReady;
 
@@ -207,9 +207,9 @@ export const getEventsOnDay = ({
   const events = [];
 
   for (const [calendarId, calendar] of Object.entries(getAllCalendars())) {
-    // if (!calendarIds.includes(calendarId)) {
-    //   continue;
-    // }
+    if (!calendarIds.includes(calendarId)) {
+      continue;
+    }
 
     for (const event of Object.values(calendar.events)) {
       const eventStart = toDate(event.start);
