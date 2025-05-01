@@ -36,6 +36,9 @@ export default class Render {
     this.canvas.style.width = this.width + "px";
     this.canvas.style.height = this.height + "px";
     this.ctx.scale(dpr, dpr);
+
+    // Default to round joins
+    this.ctx.lineJoin = "round";
   }
 
   destroy() {
@@ -103,7 +106,7 @@ export default class Render {
     w: number,
     h: number,
     r: number,
-    style: RenderStyle
+    style: RenderStyle,
   ) {
     this.applyStyle(style);
     this.ctx.beginPath();
@@ -140,7 +143,7 @@ export default class Render {
   poly(
     points: Array<{ x: number; y: number }>,
     style: RenderStyle,
-    closed = true
+    closed = true,
   ) {
     if (points.length < 2) return;
 
@@ -177,7 +180,7 @@ export default class Render {
     toX: number,
     toY: number,
     style: RenderStyle,
-    headLength: number = 10
+    headLength: number = 10,
   ) {
     const angle = Math.atan2(toY - fromY, toX - fromX);
     const headAngle1 = angle + Math.PI / 6;
@@ -189,12 +192,12 @@ export default class Render {
     this.ctx.lineTo(toX, toY);
     this.ctx.lineTo(
       toX - headLength * Math.cos(headAngle1),
-      toY - headLength * Math.sin(headAngle1)
+      toY - headLength * Math.sin(headAngle1),
     );
     this.ctx.moveTo(toX, toY);
     this.ctx.lineTo(
       toX - headLength * Math.cos(headAngle2),
-      toY - headLength * Math.sin(headAngle2)
+      toY - headLength * Math.sin(headAngle2),
     );
     if (style.doStroke) {
       this.ctx.stroke();
@@ -224,7 +227,7 @@ export default class Render {
         position.x,
         position.y,
         img.naturalWidth / 2,
-        img.naturalHeight / 2
+        img.naturalHeight / 2,
       );
     }
   }
@@ -269,7 +272,7 @@ export function stroke(strokeStyle: string, lineWidth: number): RenderStyle {
 export function dashedStroke(
   strokeStyle: string,
   lineWidth: number,
-  dash: number[]
+  dash: number[],
 ): RenderStyle {
   let s = defaultStyle();
   s.strokeStyle = strokeStyle;
@@ -282,7 +285,7 @@ export function dashedStroke(
 export function fillAndStroke(
   fillStyle: string,
   strokeStyle: string,
-  lineWidth: number
+  lineWidth: number,
 ): RenderStyle {
   let s = defaultStyle();
   s.fillStyle = fillStyle;

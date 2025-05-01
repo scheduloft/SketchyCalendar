@@ -1,7 +1,7 @@
 import StateManager from "state";
 import Tool from "tool/tool";
 import CreateCardTool from "tool/createcard";
-import DrawTool from "tool/draw";
+import DrawTool, { PenType } from "tool/draw";
 import EraseTool from "tool/erase";
 import CreateCalendarCardTool from "tool/createcalendarcard";
 
@@ -20,19 +20,28 @@ export default class Input {
   constructor(
     state_manager: StateManager,
     selection: Selection,
-    toolbar: Toolbar
+    toolbar: Toolbar,
   ) {
     this.state_manager = state_manager;
     this.toolbar = toolbar;
     this.selection = selection;
-    this.tool = new DrawTool(state_manager);
+    this.tool = new DrawTool(state_manager, "pen_black");
 
     window.addEventListener("pointerdown", (e) => {
       // Handle Toolbar Click
       if (this.toolbar.click({ x: e.clientX, y: e.clientY })) {
         const tool = this.toolbar.getCurrentTool();
-        if (tool == "draw") {
-          this.tool = new DrawTool(this.state_manager);
+        if (
+          [
+            "pen_black",
+            "pen_red",
+            "pen_blue",
+            "highlight_yellow",
+            "highlight_green",
+            "whiteout",
+          ].includes(tool)
+        ) {
+          this.tool = new DrawTool(this.state_manager, tool as PenType);
         } else if (tool == "card") {
           this.tool = new CreateCardTool(this.state_manager);
         } else if (tool == "calendar") {
@@ -53,7 +62,7 @@ export default class Input {
         if (!inst || !inst.linkToCardInstanceId) return;
 
         const linkedInstance = this.state_manager.getCardInstance(
-          inst.linkToCardInstanceId
+          inst.linkToCardInstanceId,
         );
 
         if (!linkedInstance) return;
@@ -65,7 +74,7 @@ export default class Input {
         // is click in the top right corner of the card?
         if (isInTopLeft) {
           const linkedInstance = this.state_manager.getCardInstance(
-            inst.linkToCardInstanceId
+            inst.linkToCardInstanceId,
           );
 
           if (linkedInstance) {

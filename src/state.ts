@@ -12,6 +12,8 @@ export type Stroke = {
   cardId?: Id<Card>;
   pageId?: Id<Page>;
   points: Array<Point>;
+  color: string;
+  weight: number;
 };
 
 function arePointsNear(
@@ -344,7 +346,10 @@ export default class StateManager {
     );
   }
 
-  createNewStroke(position: Point): { stroke: Stroke; offset: Point } {
+  createNewStroke(
+    position: Point,
+    props: { color: string; weight: number },
+  ): { stroke: Stroke; offset: Point } {
     const instance = this.findCardInstanceAt(position);
 
     if (instance) {
@@ -352,6 +357,8 @@ export default class StateManager {
         id: generateId<Stroke>(),
         cardId: instance.cardId,
         points: [],
+        color: props.color,
+        weight: props.weight,
       };
 
       this.update((state) => {
@@ -367,6 +374,8 @@ export default class StateManager {
         id: generateId<Stroke>(),
         pageId: this.currentPage,
         points: [],
+        color: props.color,
+        weight: props.weight,
       };
 
       this.update((state) => {
@@ -397,6 +406,7 @@ export default class StateManager {
   }
 
   render(render: Render) {
+    // Page number
     const currentPage = this.state.pages[this.currentPage];
     const pageNumber = this.state.pageOrder.indexOf(this.currentPage) + 1;
 
@@ -407,10 +417,12 @@ export default class StateManager {
       font("20px Arial", "gray"),
     );
 
+    // Strokes
     currentPage.strokes.forEach((s) => {
-      render.poly(s.points, stroke("#000", 1), false);
+      render.poly(s.points, stroke(s.color, s.weight), false);
     });
 
+    // Cards
     this.cardInstancesOnCurrentPage().forEach((instance) => {
       const card = this.state.cards[instance.cardId];
 
@@ -521,7 +533,7 @@ export default class StateManager {
 
       card.strokes.forEach((s) => {
         const offset_stroke = s.points.map((p) => Vec.add(p, instance));
-        render.poly(offset_stroke, stroke("#000", 1), false);
+        render.poly(offset_stroke, stroke(s.color, s.weight), false);
       });
     });
   }
