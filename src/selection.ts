@@ -9,8 +9,6 @@ import Render, {
 } from "render";
 import StateManager, { Card, CardInstance, Id } from "state";
 
-import { getAllCalendars } from "./googlecalendar";
-
 const OPTIONS = ["copy", "transclude", "delete"];
 
 export default class Selection {
@@ -43,7 +41,7 @@ export default class Selection {
   click({ x, y }: Point) {
     if (!this.active()) return;
     const inst = this.state_manager.getCardInstance(
-      this.state_manager.selectedCardInstance!,
+      this.state_manager.selectedCardInstance!
     )!;
 
     if (
@@ -75,7 +73,7 @@ export default class Selection {
       this.state_manager.selectedCardInstance = newCardInstance.id;
     } else if (option === "delete") {
       this.state_manager.deleteCardInstance(
-        this.state_manager.selectedCardInstance!,
+        this.state_manager.selectedCardInstance!
       );
       this.state_manager.selectedCardInstance = null;
     } else if (option === undefined) {
@@ -85,14 +83,14 @@ export default class Selection {
 
       show_calendarModal(
         this.state_manager.getCard(inst.cardId)!,
-        this.state_manager,
+        this.state_manager
       );
     }
   }
 
   drag(delta: Vec) {
     const instance = this.state_manager.getCardInstance(
-      this.state_manager.selectedCardInstance!,
+      this.state_manager.selectedCardInstance!
     );
     if (instance) {
       const newPos = Vec.add(instance, delta);
@@ -104,7 +102,7 @@ export default class Selection {
     // Selected Card
     if (this.active()) {
       const inst = this.state_manager.getCardInstance(
-        this.state_manager.selectedCardInstance!,
+        this.state_manager.selectedCardInstance!
       )!;
 
       // Draw the selection box
@@ -115,7 +113,7 @@ export default class Selection {
         card.width + 8,
         card.height + 8,
         4,
-        dashedStroke("blue", 1, [10, 10]),
+        dashedStroke("blue", 1, [10, 10])
       );
 
       // Draw selection the menu
@@ -126,7 +124,7 @@ export default class Selection {
         (OPTIONS.length + 1) * 40,
         40,
         3,
-        fill("#0001"),
+        fill("#0001")
       );
       r.round_rect(
         p.x,
@@ -135,7 +133,7 @@ export default class Selection {
         (OPTIONS.length + 1) * 40,
         40,
         3,
-        fillAndStroke("#FFF", "#0002", 1),
+        fillAndStroke("#FFF", "#0002", 1)
       );
 
       // Actions
@@ -149,7 +147,7 @@ export default class Selection {
         p.y,
         p.x + OPTIONS.length * 40,
         p.y + 40,
-        stroke("#0002", 1),
+        stroke("#0002", 1)
       );
 
       r.image("/img/calendar.png", { x: p.x + OPTIONS.length * 40, y: p.y });
@@ -198,8 +196,7 @@ function show_calendarModal(card: Card, state_manager: StateManager) {
 
   wrapper.appendChild(datepicker);
 
-  const calendars = getAllCalendars();
-  console.log(calendars);
+  const { calendars } = state_manager.calendarDocHandle.doc();
   Object.values(calendars).forEach((calendar) => {
     const line = document.createElement("hr");
     wrapper.appendChild(line);
@@ -208,19 +205,14 @@ function show_calendarModal(card: Card, state_manager: StateManager) {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked =
-      card.props!.calendarIds.findIndex((id) => id === calendar.metadata.id) !==
-      -1;
+      card.props!.calendarIds.findIndex((id) => id === calendar.id) !== -1;
     checkbox.onchange = () => {
-      state_manager.updateCardCalendar(
-        card.id,
-        calendar.metadata.id!,
-        checkbox.checked,
-      );
+      state_manager.updateCardCalendar(card.id, calendar.id!, checkbox.checked);
     };
     wrapper.appendChild(checkbox);
 
     const label = document.createElement("label");
-    label.innerText = calendar.metadata.summary!;
+    label.innerText = calendar.summary!;
     wrapper.appendChild(label);
   });
 

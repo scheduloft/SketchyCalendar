@@ -3,7 +3,7 @@ import { Point } from "geom/point";
 import { Vec } from "geom/vec";
 import Render, { fill, fillAndStroke, font, stroke } from "render";
 
-import { getEventsOnDay } from "googlecalendar";
+import { Calendar, getEventsOnDay } from "calendar";
 
 export type Id<T> = string & { __brand: T };
 
@@ -19,7 +19,7 @@ export type Stroke = {
 function arePointsNear(
   position: Point,
   points: Array<Point>,
-  distance: number = 10,
+  distance: number = 10
 ): boolean {
   for (const pt of points) {
     const dx = pt.x - position.x;
@@ -98,20 +98,24 @@ export function getNewEmptyState(): State {
 export default class StateManager {
   currentPage: Id<Page>;
   selectedCardInstance: Id<CardInstance> | null = null;
-  docHandle: DocHandle<State>;
+  stateDocHandle: DocHandle<State>;
+  calendarDocHandle: DocHandle<Calendar>;
 
-  constructor(docHandle: DocHandle<State>) {
-    this.docHandle = docHandle;
-
+  constructor(
+    docHandle: DocHandle<State>,
+    calendarDocHandle: DocHandle<Calendar>
+  ) {
+    this.stateDocHandle = docHandle;
+    this.calendarDocHandle = calendarDocHandle;
     this.currentPage = this.state.pageOrder[0];
   }
 
   get state(): State {
-    return this.docHandle.docSync() as State;
+    return this.stateDocHandle.doc() as State;
   }
 
   update(callback: (state: State) => void) {
-    this.docHandle.change(callback);
+    this.stateDocHandle.change(callback);
   }
 
   gotoPage(pageId: Id<Page>) {
@@ -214,7 +218,7 @@ export default class StateManager {
   updateCardCalendar(
     cardId: Id<Card>,
     calendarId: string,
-    active: boolean,
+    active: boolean
   ): void {
     this.update((state) => {
       const card = state.cards[cardId];
@@ -222,7 +226,7 @@ export default class StateManager {
         card.props!.calendarIds.push(calendarId);
       } else {
         card.props!.calendarIds = card.props!.calendarIds.filter(
-          (id) => id !== calendarId,
+          (id) => id !== calendarId
         );
       }
     });
@@ -314,7 +318,7 @@ export default class StateManager {
           if (arePointsNear(position, stroke.points)) {
             state.pages[this.currentPage].strokes.splice(
               state.pages[this.currentPage].strokes.indexOf(stroke),
-              1,
+              1
             );
           }
         });
@@ -324,7 +328,7 @@ export default class StateManager {
 
   cardInstancesOnCurrentPage(): Array<CardInstance> {
     return Object.values(this.state.cardInstances).filter(
-      (instance) => instance.pageId === this.currentPage,
+      (instance) => instance.pageId === this.currentPage
     );
   }
 
@@ -348,7 +352,7 @@ export default class StateManager {
 
   createNewStroke(
     position: Point,
-    props: { color: string; weight: number },
+    props: { color: string; weight: number }
   ): { stroke: Stroke; offset: Point } {
     const instance = this.findCardInstanceAt(position);
 
@@ -391,13 +395,13 @@ export default class StateManager {
     this.update((state) => {
       if (stroke.pageId) {
         const mutableStroke = state.pages[stroke.pageId].strokes.find(
-          (s) => s.id === stroke.id,
+          (s) => s.id === stroke.id
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
       } else if (stroke.cardId) {
         const mutableStroke = state.cards[stroke.cardId].strokes.find(
-          (s) => s.id === stroke.id,
+          (s) => s.id === stroke.id
         );
         if (!mutableStroke) return;
         mutableStroke.points.push(point);
@@ -414,7 +418,7 @@ export default class StateManager {
       pageNumber.toString(),
       render.width - 30,
       30,
-      font("20px Arial", "gray"),
+      font("20px Arial", "gray")
     );
 
     // Strokes
@@ -432,7 +436,7 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fill("#0001"),
+        fill("#0001")
       );
       render.round_rect(
         instance.x,
@@ -440,12 +444,12 @@ export default class StateManager {
         card.width,
         card.height,
         3,
-        fillAndStroke("#FFF", "#0002", 0.5),
+        fillAndStroke("#FFF", "#0002", 0.5)
       );
 
       if (instance.linkToCardInstanceId) {
         const linkedInstance = this.getCardInstance(
-          instance.linkToCardInstanceId,
+          instance.linkToCardInstanceId
         );
 
         if (linkedInstance) {
@@ -457,7 +461,8 @@ export default class StateManager {
       }
 
       if (card.type == "Calendar") {
-        const date = new Date(card.props!.date);
+        const { calendarIds, date: dateString } = card.props!;
+        const date = new Date(dateString);
 
         // Draw calendar grid
         const headerHeight = 150;
@@ -474,7 +479,7 @@ export default class StateManager {
             y,
             instance.x + card.width,
             y,
-            stroke("#AAA", 1),
+            stroke("#AAA", 1)
           );
         }
 
@@ -486,7 +491,7 @@ export default class StateManager {
           }),
           instance.x + 10,
           instance.y + 30,
-          font("18px Arial", "gray"),
+          font("18px Arial", "gray")
         );
 
         const isToday =
@@ -502,11 +507,15 @@ export default class StateManager {
             instance.y + offset,
             instance.x + card.width,
             instance.y + offset,
-            stroke("#cc7474", 1),
+            stroke("#cc7474", 1)
           );
         }
 
-        const events = getEventsOnDay(card.props!);
+        const events = getEventsOnDay(
+          date,
+          calendarIds,
+          this.calendarDocHandle
+        );
         for (const event of events) {
           const start = new Date(event.start!.dateTime!);
           const start_offset =
@@ -520,13 +529,13 @@ export default class StateManager {
             card.width - 50,
             end_offset - start_offset,
             3,
-            fill("#00000011"),
+            fill("#00000011")
           );
           render.text(
             event.summary!,
             instance.x + 60,
             instance.y + start_offset + 15,
-            fill("#AAA"),
+            fill("#AAA")
           );
         }
       }
@@ -544,7 +553,7 @@ function getTimeOffset(
   startHour: number,
   endHour: number,
   offsetStart: number,
-  offsetEnd: number,
+  offsetEnd: number
 ): number {
   const totalMinutesInRange = (endHour - startHour) * 60;
   const minutesSinceStart =
@@ -553,7 +562,7 @@ function getTimeOffset(
   // Clamp minutesSinceStart between 0 and totalMinutesInRange
   const clampedMinutes = Math.max(
     0,
-    Math.min(minutesSinceStart, totalMinutesInRange),
+    Math.min(minutesSinceStart, totalMinutesInRange)
   );
 
   const ratio = clampedMinutes / totalMinutesInRange;

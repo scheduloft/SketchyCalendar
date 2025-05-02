@@ -13,7 +13,14 @@ export default class CreateCalendarCardTool implements Tool {
   }
 
   onpointerdown(position: Point) {
-    this.cardId = this.state_manager.createNewCalendarCard(position, []).cardId;
+    const calendarIds = Object.values(
+      this.state_manager.calendarDocHandle.doc().calendars
+    ).map((calendar) => calendar.id!);
+
+    this.cardId = this.state_manager.createNewCalendarCard(
+      position,
+      calendarIds
+    ).cardId;
     this.downPos = position;
   }
 

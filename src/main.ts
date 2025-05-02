@@ -2,15 +2,11 @@ import { DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
 import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import Render from "render";
-import StateManager, { getNewEmptyState, State } from "state";
-import Toolbar from "toolbar";
 import Selection from "selection";
+import StateManager, { getNewEmptyState, State } from "state";
 import tick from "tick";
-import {
-  getEventsOnDay,
-  syncAllCalendars,
-  getAllCalendars,
-} from "./googlecalendar";
+import Toolbar from "toolbar";
+import { Calendar } from "./calendar";
 import "./index.css";
 
 import Input from "input";
@@ -25,40 +21,54 @@ const repo = new Repo({
   storage: new IndexedDBStorageAdapter(),
 });
 
+let calenderDocUrl: DocumentId | null = localStorage.getItem(
+  "calendarDocUrl"
+) as DocumentId | null;
+
+if (!calenderDocUrl) {
+  let url = prompt(
+    "Please enter your calendar doc url. If you don't have one you can ask Paul"
+  );
+
+  let maybeCalendarDoc = (await repo.find<Calendar>(url as DocumentId))?.doc();
+
+  if (
+    url &&
+    maybeCalendarDoc &&
+    typeof maybeCalendarDoc.calendars === "object" &&
+    typeof maybeCalendarDoc.events === "object"
+  ) {
+    calenderDocUrl = url as DocumentId;
+    localStorage.setItem("calendarDocUrl", url);
+  }
+}
+
+const calendarDocHandle = await repo.find<Calendar>(
+  calenderDocUrl as DocumentId
+);
+
 // Get document ID from URL hash if available
 let documentId = window.location.hash.slice(1) as DocumentId;
 
-let handle: DocHandle<State>;
+let stateDocHandle: DocHandle<State>;
 
 if (!documentId) {
-  handle = repo.create(getNewEmptyState());
-  documentId = handle.documentId;
+  stateDocHandle = repo.create(getNewEmptyState());
+  documentId = stateDocHandle.documentId;
 
   // Update URL with the new document ID
   window.location.hash = documentId;
 } else {
-  handle = repo.find<State>(documentId);
+  stateDocHandle = await repo.find<State>(documentId);
 }
-
-syncAllCalendars();
-
-console.log(await handle.doc());
 
 const render = new Render();
 
-const state_manager = new StateManager(handle);
+const state_manager = new StateManager(stateDocHandle, calendarDocHandle);
 const toolbar = new Toolbar();
 const selection = new Selection(state_manager);
 
 new Input(state_manager, selection, toolbar);
-
-//const events =
-const today = new Date();
-const events = getEventsOnDay({
-  calendarIds: [],
-  date: today,
-});
-console.log(events);
 
 tick((_) => {
   render.clear();
