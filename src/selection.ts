@@ -32,8 +32,8 @@ export default class Selection {
     }
   }
 
-  click({ x, y }: Point) {
-    if (!this.active()) return;
+  click({ x, y }: Point): boolean {
+    if (!this.active()) return false;
     const inst = this.state_manager.getCardInstance(
       this.state_manager.selectedCardInstance!
     )!;
@@ -80,6 +80,8 @@ export default class Selection {
         this.state_manager
       );
     }
+
+    return true;
   }
 
   drag(delta: Vec) {

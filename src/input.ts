@@ -91,36 +91,16 @@ export default class Input {
         }
       }
 
-      // Handle Selection
-      if (e.shiftKey) {
-        this.selection.selectAtPosition({ x: e.clientX, y: e.clientY });
-        return;
-      }
-
-      if (this.selection.active()) {
-        this.selection.click({ x: e.clientX, y: e.clientY });
-        this.dragging = true;
-        return;
-      }
-
       // Handle regular pointer
       this.tool.onpointerdown({ x: e.clientX, y: e.clientY });
     });
 
     window.addEventListener("pointermove", (e) => {
-      if (this.selection.active() && this.dragging) {
-        this.selection.drag({ x: e.movementX, y: e.movementY });
-      } else {
-        this.tool.onpointermove({ x: e.clientX, y: e.clientY });
-      }
+      this.tool.onpointermove({ x: e.clientX, y: e.clientY });
     });
 
     window.addEventListener("pointerup", (e) => {
-      if (this.selection.active()) {
-        this.dragging = false;
-      } else {
-        this.tool.onpointerup({ x: e.clientX, y: e.clientY });
-      }
+      this.tool.onpointerup({ x: e.clientX, y: e.clientY });
     });
 
     window.addEventListener("keydown", (e) => {
