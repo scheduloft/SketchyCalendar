@@ -3,6 +3,7 @@ import Tool from "tool/tool";
 import CreateCardTool from "tool/createcard";
 import DrawTool, { PenType } from "tool/draw";
 import EraseTool from "tool/erase";
+import SelectTool from "tool/select";
 import CreateCalendarCardTool from "tool/createcalendarcard";
 
 import Toolbar from "toolbar";
@@ -20,7 +21,7 @@ export default class Input {
   constructor(
     state_manager: StateManager,
     selection: Selection,
-    toolbar: Toolbar,
+    toolbar: Toolbar
   ) {
     this.state_manager = state_manager;
     this.toolbar = toolbar;
@@ -53,6 +54,8 @@ export default class Input {
           this.tool = new CreateCalendarCardTool(this.state_manager);
         } else if (tool == "eraser") {
           this.tool = new EraseTool(this.state_manager);
+        } else if (tool == "select") {
+          this.tool = new SelectTool(this.state_manager, this.selection);
         }
         return;
       }
@@ -67,7 +70,7 @@ export default class Input {
         if (!inst || !inst.linkToCardInstanceId) return;
 
         const linkedInstance = this.state_manager.getCardInstance(
-          inst.linkToCardInstanceId,
+          inst.linkToCardInstanceId
         );
 
         if (!linkedInstance) return;
@@ -79,7 +82,7 @@ export default class Input {
         // is click in the top right corner of the card?
         if (isInTopLeft) {
           const linkedInstance = this.state_manager.getCardInstance(
-            inst.linkToCardInstanceId,
+            inst.linkToCardInstanceId
           );
 
           if (linkedInstance) {

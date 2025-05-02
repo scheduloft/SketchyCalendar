@@ -1,13 +1,7 @@
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
-import Render, {
-  dashedStroke,
-  fill,
-  fillAndStroke,
-  stroke,
-  font,
-} from "render";
-import StateManager, { Card, CardInstance, Id } from "state";
+import Render, { dashedStroke, fill, fillAndStroke, stroke } from "render";
+import StateManager, { Card } from "state";
 
 const OPTIONS = ["copy", "transclude", "delete"];
 

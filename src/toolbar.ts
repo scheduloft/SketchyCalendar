@@ -1,13 +1,14 @@
 import Render, { fillAndStroke, fill } from "./render";
 
 export const TOOLS = [
+  ["select"],
   ["pen_black", "pen_blue", "pen_red", "highlight_yellow", "highlight_green"],
   ["eraser", "whiteout"],
   ["card", "calendar"],
 ];
 
 export default class Toolbar {
-  activeSection: number = 0;
+  activeSection: number = 1;
   activeTool: number = 0;
 
   render(r: Render) {
