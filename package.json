@@ -6,10 +6,10 @@
   "main": "dist/patchwork.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
-    "push": "vite build --config vite.patchwork.config.ts && jacquard push",
-    "watch": "nodemon --watch src -e js,tsx,ts,tsx,css,json --exec 'vite build --config vite.patchwork.config.ts && jacquard push'"
+    "push": "vite build && jacquard push",
+    "watch": "nodemon --watch src -e js,tsx,ts,tsx,css,json --exec 'vite build && jacquard push'"
   },
   "devDependencies": {
     "@patchwork/sdk": "file:../patchwork/sdk",

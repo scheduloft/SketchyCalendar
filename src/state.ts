@@ -453,7 +453,7 @@ export default class StateManager {
         );
 
         if (linkedInstance) {
-          render.image("/img/transclude-light.png", {
+          render.image("./img/transclude-light.png", {
             x: instance.x + card.width - 40,
             y: instance.y,
           });

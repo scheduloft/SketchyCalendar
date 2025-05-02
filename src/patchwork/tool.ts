@@ -1,38 +1,13 @@
 import { EditorProps } from "@patchwork/sdk";
-import StateManager, { State } from "state";
-import { createElement, useEffect, useState } from "react";
-import { useDocHandle } from "@automerge/automerge-repo-react-hooks";
-import Render from "render";
-import Input from "input";
-import tick from "tick";
+import { createElement } from "react";
+import { State } from "state";
 
 export const Tool: React.FC<EditorProps<State, string>> = ({ docUrl }) => {
-  const handle = useDocHandle<State>(docUrl);
-  const [container, setContainer] = useState<HTMLDivElement>();
-
-  useEffect(() => {
-    if (!container || !handle) {
-      return;
-    }
-
-    const render = new Render(container);
-    const state_manager = new StateManager(handle);
-
-    new Input(state_manager);
-
-    const stop = tick((_) => {
-      render.clear();
-      state_manager.render(render);
-    });
-
-    return () => {
-      stop();
-      render.destroy();
-    };
-  }, [handle, container]);
-
-  return createElement("div", {
+  return createElement("iframe", {
     style: { width: "100%", height: "100%" },
-    ref: setContainer,
+    key: docUrl, // just remount the iframe becaue index.html doesn't handle url changes
+    src:
+      "https://patchwork.inkandswitch.com/automerge/automerge:22ubbbsJkuLvbjcFNjzHNAQe17tj/dist/index.html#" +
+      docUrl,
   });
 };

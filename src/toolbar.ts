@@ -23,7 +23,7 @@ export default class Toolbar {
         40,
         section.length * 40,
         3,
-        fillAndStroke("#FFF", "#0002", 1),
+        fillAndStroke("#FFF", "#0002", 1)
       );
 
       // render tool hightlight
@@ -34,12 +34,15 @@ export default class Toolbar {
           36,
           36,
           3,
-          fill("#00000020"),
+          fill("#00000020")
         );
       }
 
       for (let i = 0; i < section.length; i++) {
-        r.image("/img/" + section[i] + ".png", { x: p_x, y: p_y + i * 40 });
+        r.image("./img/" + section[i] + ".png", {
+          x: p_x,
+          y: p_y + i * 40,
+        });
       }
 
       p_y += section.length * 40 + 4;

@@ -138,7 +138,10 @@ export default class Selection {
 
       // Actions
       for (let i = 0; i < OPTIONS.length; i++) {
-        r.image("/img/" + OPTIONS[i] + ".png", { x: p.x + i * 40, y: p.y });
+        r.image("./img/" + OPTIONS[i] + ".png", {
+          x: p.x + i * 40,
+          y: p.y,
+        });
       }
 
       // Dividing line
@@ -150,7 +153,10 @@ export default class Selection {
         stroke("#0002", 1)
       );
 
-      r.image("/img/calendar.png", { x: p.x + OPTIONS.length * 40, y: p.y });
+      r.image("./img/calendar.png", {
+        x: p.x + OPTIONS.length * 40,
+        y: p.y,
+      });
 
       // if (this.showProperty) {
       //   const p_x = p.x + OPTIONS.length * 40 - 20;
@@ -171,9 +177,9 @@ export default class Selection {
       //     font("12px Arial", "black"),
       //   );
       //   // Arrow left
-      //   r.image("/img/arrow-left.png", { x: p_x, y: p_y });
+      //   r.image("./img/arrow-left.png", { x: p_x, y: p_y });
       //   // Arrow right
-      //   r.image("/img/arrow-right.png", { x: p_x + 100, y: p_y });
+      //   r.image("./img/arrow-right.png", { x: p_x + 100, y: p_y });
       // }
     }
   }

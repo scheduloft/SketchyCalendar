@@ -5,18 +5,20 @@ import { defineConfig } from "vite";
 import { EXTERNAL_DEPENDENCIES } from "@patchwork/sdk/shared-dependencies";
 
 export default defineConfig({
+  base: "./",
   plugins: [tsconfigPaths(), wasm(), topLevelAwait()],
   build: {
     rollupOptions: {
-      external: EXTERNAL_DEPENDENCIES,
       input: {
-        main: "src/patchwork/index.ts",
+        patchwork: "src/patchwork/index.ts",
+        index: "index.html",
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === "main"
-            ? "patchwork.js"
-            : "[name].[hash].js";
+          if (chunkInfo.name === "patchwork") {
+            return "patchwork.js";
+          }
+          return "[name].[hash].js";
         },
       },
       preserveEntrySignatures: "strict",
