@@ -6,7 +6,7 @@ body {
   overflow: hidden;
 }
 
-.no-select {
+html, body {
   touch-action: none;
   -webkit-user-drag: none;
   -webkit-user-select: none;

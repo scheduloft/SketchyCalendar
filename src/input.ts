@@ -28,7 +28,7 @@ export default class Input {
     this.selection = selection;
     this.tool = new DrawTool(state_manager, "pen_black");
 
-    window.addEventListener("pointerdown", (e) => {
+    document.addEventListener("pointerdown", (e) => {
       // @ts-ignore: Ignore events that aren't on the canvas
       if (e.target.nodeName !== "CANVAS") {
         return;
@@ -95,9 +95,14 @@ export default class Input {
       this.tool.onpointerdown({ x: e.clientX, y: e.clientY });
     });
 
-    window.addEventListener("pointermove", (e) => {
-      this.tool.onpointermove({ x: e.clientX, y: e.clientY });
-    });
+    window.addEventListener(
+      "pointermove",
+      (e) => {
+        e.preventDefault();
+        this.tool.onpointermove({ x: e.clientX, y: e.clientY });
+      },
+      { passive: false }
+    );
 
     window.addEventListener("pointerup", (e) => {
       this.tool.onpointerup({ x: e.clientX, y: e.clientY });

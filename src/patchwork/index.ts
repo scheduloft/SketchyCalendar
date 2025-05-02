@@ -1,5 +1,6 @@
 import { makeTool, ToolDescription, LoadableDataType } from "@patchwork/sdk";
 import { Doc } from "./datatype.ts";
+import "./style.css";
 
 export const dataType: LoadableDataType<Doc> = {
   type: "patchwork:dataType",

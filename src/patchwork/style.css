@@ -1,0 +1,6 @@
+
+/* Prevent overscroll behavior otherwise drawing with the pen triggers the pull to refresh on ios */
+
+html, body {
+  overscroll-behavior: none;
+}
