@@ -9,6 +9,7 @@ import CreateCalendarCardTool from "tool/createcalendarcard";
 import Toolbar from "toolbar";
 
 import Selection from "selection";
+import CreateTextTool from "tool/text";
 
 export default class Input {
   state_manager: StateManager;
@@ -31,32 +32,6 @@ export default class Input {
     document.addEventListener("pointerdown", (e) => {
       // @ts-ignore: Ignore events that aren't on the canvas
       if (e.target.nodeName !== "CANVAS") {
-        return;
-      }
-
-      // Handle Toolbar Click
-      if (this.toolbar.click({ x: e.clientX, y: e.clientY })) {
-        const tool = this.toolbar.getCurrentTool();
-        if (
-          [
-            "pen_black",
-            "pen_red",
-            "pen_blue",
-            "highlight_yellow",
-            "highlight_green",
-            "whiteout",
-          ].includes(tool)
-        ) {
-          this.tool = new DrawTool(this.state_manager, tool as PenType);
-        } else if (tool == "card") {
-          this.tool = new CreateCardTool(this.state_manager);
-        } else if (tool == "calendar") {
-          this.tool = new CreateCalendarCardTool(this.state_manager);
-        } else if (tool == "eraser") {
-          this.tool = new EraseTool(this.state_manager);
-        } else if (tool == "select") {
-          this.tool = new SelectTool(this.state_manager, this.selection);
-        }
         return;
       }
 
@@ -87,8 +62,37 @@ export default class Input {
 
           if (linkedInstance) {
             this.state_manager.gotoPage(linkedInstance.pageId);
+            return;
           }
         }
+      }
+
+      // Handle Toolbar Click
+      if (this.toolbar.click({ x: e.clientX, y: e.clientY })) {
+        const tool = this.toolbar.getCurrentTool();
+        if (
+          [
+            "pen_black",
+            "pen_red",
+            "pen_blue",
+            "highlight_yellow",
+            "highlight_green",
+            "whiteout",
+          ].includes(tool)
+        ) {
+          this.tool = new DrawTool(this.state_manager, tool as PenType);
+        } else if (tool == "card") {
+          this.tool = new CreateCardTool(this.state_manager);
+        } else if (tool == "calendar") {
+          this.tool = new CreateCalendarCardTool(this.state_manager);
+        } else if (tool == "eraser") {
+          this.tool = new EraseTool(this.state_manager);
+        } else if (tool == "select") {
+          this.tool = new SelectTool(this.state_manager, this.selection);
+        } else if (tool == "text") {
+          this.tool = new CreateTextTool(this.state_manager);
+        }
+        return;
       }
 
       // Handle regular pointer

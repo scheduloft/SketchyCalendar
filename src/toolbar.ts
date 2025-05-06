@@ -4,7 +4,7 @@ export const TOOLS = [
   ["select"],
   ["pen_black", "pen_blue", "pen_red", "highlight_yellow", "highlight_green"],
   ["eraser", "whiteout"],
-  ["card", "calendar"],
+  ["text", "card", "calendar"],
 ];
 
 export default class Toolbar {

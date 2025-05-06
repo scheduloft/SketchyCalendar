@@ -31,11 +31,17 @@ function arePointsNear(
   return false;
 }
 
+export type TextElement = {
+  position: Point;
+  value: string;
+};
+
 export type Card = {
   id: Id<Card>;
   width: number;
   height: number;
   strokes: Array<Stroke>;
+  textelements: Array<TextElement>;
   type: "Default" | "Calendar";
   props?: {
     calendarIds: Array<string>;
@@ -62,6 +68,7 @@ export type CardInstance = {
 export type Page = {
   id: Id<Page>;
   strokes: Array<Stroke>;
+  textelements: Array<TextElement>;
 };
 
 export type State = {
@@ -89,6 +96,7 @@ export function getNewEmptyState(): State {
       [firstPageId]: {
         id: firstPageId,
         strokes: [],
+        textelements: [],
       },
     },
     pageOrder: [firstPageId],
@@ -142,6 +150,7 @@ export default class StateManager {
         id: generateId<Page>(),
         cardInstances: [],
         strokes: [],
+        textelements: [],
       };
 
       this.update((state) => {
@@ -175,6 +184,7 @@ export default class StateManager {
         width: 5,
         height: 5,
         strokes: [],
+        textelements: [],
         type: "Default",
       };
     });
@@ -242,6 +252,7 @@ export default class StateManager {
         width: 200,
         height: 750,
         strokes: [],
+        textelements: [],
         type: "Calendar",
         props: {
           calendarIds,
@@ -409,6 +420,25 @@ export default class StateManager {
     });
   }
 
+  createNewText(position: Point) {
+    const text = {
+      position,
+      value: "hello!",
+    };
+
+    const found = this.findCardInstanceAt(position);
+    if (found) {
+      text.position = Vec.sub(text.position, found);
+      this.update((state) => {
+        state.cards[found.cardId].textelements.push(text);
+      });
+    } else {
+      this.update((state) => {
+        state.pages[this.currentPage].textelements.push(text);
+      });
+    }
+  }
+
   render(render: Render) {
     // Page number
     const currentPage = this.state.pages[this.currentPage];
@@ -424,6 +454,16 @@ export default class StateManager {
     // Strokes
     currentPage.strokes.forEach((s) => {
       render.poly(s.points, stroke(s.color, s.weight), false);
+    });
+
+    // Text Elements
+    currentPage.textelements.forEach((s) => {
+      render.text(
+        s.value,
+        s.position.x,
+        s.position.y,
+        font("18px Arial", "black")
+      );
     });
 
     // Cards
@@ -543,6 +583,12 @@ export default class StateManager {
       card.strokes.forEach((s) => {
         const offset_stroke = s.points.map((p) => Vec.add(p, instance));
         render.poly(offset_stroke, stroke(s.color, s.weight), false);
+      });
+
+      // Text Elements
+      card.textelements.forEach((s) => {
+        const offset = Vec.add(s.position, instance);
+        render.text(s.value, offset.x, offset.y, font("18px Arial", "black"));
       });
     });
   }
