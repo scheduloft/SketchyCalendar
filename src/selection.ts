@@ -1,7 +1,7 @@
 import { Point } from "geom/point";
 import { Vec } from "geom/vec";
 import Render, { dashedStroke, fill, fillAndStroke, stroke } from "render";
-import StateManager, { Card } from "state";
+import StateManager, { Card, TextElementReference } from "state";
 import TextInput from "textinput";
 
 const OPTIONS = ["copy", "transclude", "delete"];
@@ -26,11 +26,15 @@ export default class Selection {
     return this.state_manager.selectedCardInstance !== null;
   }
 
+  selectText(ref: TextElementReference) {
+    this.text_input.open(ref);
+  }
+
   selectAtPosition(position: Point) {
     // Find text elements first
     const found_text = this.state_manager.findTextElementAt(position);
     if (found_text) {
-      this.text_input.open(found_text);
+      this.selectText(found_text);
       return;
     }
 

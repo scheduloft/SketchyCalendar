@@ -90,7 +90,7 @@ export default class Input {
         } else if (tool == "select") {
           this.tool = new SelectTool(this.state_manager, this.selection);
         } else if (tool == "text") {
-          this.tool = new CreateTextTool(this.state_manager);
+          this.tool = new CreateTextTool(this.state_manager, this.selection);
         }
         return;
       }

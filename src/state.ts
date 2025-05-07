@@ -426,10 +426,10 @@ export default class StateManager {
     });
   }
 
-  createNewText(position: Point) {
+  createNewText(position: Point): TextElementReference {
     const text = {
       position,
-      value: "hello!",
+      value: "",
     };
 
     const found = this.findCardInstanceAt(position);
@@ -438,10 +438,18 @@ export default class StateManager {
       this.update((state) => {
         state.cards[found.cardId].textelements.push(text);
       });
+      return {
+        cardInstanceId: found.id,
+        index: this.state.cards[found.cardId].textelements.length - 1,
+      };
     } else {
       this.update((state) => {
         state.pages[this.currentPage].textelements.push(text);
       });
+      return {
+        pageId: this.currentPage,
+        index: this.state.pages[this.currentPage].textelements.length - 1,
+      };
     }
   }
 

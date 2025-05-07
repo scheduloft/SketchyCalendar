@@ -22,6 +22,12 @@ export default class TextInput {
       console.log(e.target.value);
       this.state_manager.updateTextElement(selectedTextElement, e.target.value);
     });
+
+    this.domNode.addEventListener("keydown", (e) => {
+      if (e.code == "Enter") {
+        this.close();
+      }
+    });
     this.domNode.addEventListener("blur", (_) => {
       this.close();
     });
