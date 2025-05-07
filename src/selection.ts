@@ -2,15 +2,18 @@ import { Point } from "geom/point";
 import { Vec } from "geom/vec";
 import Render, { dashedStroke, fill, fillAndStroke, stroke } from "render";
 import StateManager, { Card } from "state";
+import TextInput from "textinput";
 
 const OPTIONS = ["copy", "transclude", "delete"];
 
 export default class Selection {
   state_manager: StateManager;
+  text_input: TextInput;
   showProperty: boolean = false;
 
-  constructor(state_manager: StateManager) {
+  constructor(state_manager: StateManager, text_input: TextInput) {
     this.state_manager = state_manager;
+    this.text_input = text_input;
     this.state_manager.selectedCardInstance = null;
   }
 
@@ -24,6 +27,13 @@ export default class Selection {
   }
 
   selectAtPosition(position: Point) {
+    // Find text elements first
+    const found_text = this.state_manager.findTextElementAt(position);
+    if (found_text) {
+      this.text_input.open(found_text);
+      return;
+    }
+
     const found = this.state_manager.findCardInstanceAt(position);
     if (found) {
       this.state_manager.selectedCardInstance = found.id;
@@ -153,30 +163,6 @@ export default class Selection {
         x: p.x + OPTIONS.length * 40,
         y: p.y,
       });
-
-      // if (this.showProperty) {
-      //   const p_x = p.x + OPTIONS.length * 40 - 20;
-      //   const p_y = p.y - 45;
-      //   r.round_rect(p_x + 2, p_y + 2, 120, 40, 3, fill("#0001"));
-      //   r.round_rect(p_x, p_y, 120, 40, 3, fillAndStroke("#FFF", "#0002", 1));
-
-      //   const date = new Date(card.props!.date);
-
-      //   r.text(
-      //     date.toLocaleDateString("en-US", {
-      //       weekday: "short",
-      //       month: "short",
-      //       day: "numeric",
-      //     }),
-      //     p_x + 25,
-      //     p_y + 24,
-      //     font("12px Arial", "black"),
-      //   );
-      //   // Arrow left
-      //   r.image("./img/arrow-left.png", { x: p_x, y: p_y });
-      //   // Arrow right
-      //   r.image("./img/arrow-right.png", { x: p_x + 100, y: p_y });
-      // }
     }
   }
 }

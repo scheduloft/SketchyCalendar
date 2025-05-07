@@ -6,7 +6,8 @@ body {
   overflow: hidden;
 }
 
-html, body {
+html,
+body {
   touch-action: none;
   -webkit-user-drag: none;
   -webkit-user-select: none;
@@ -24,4 +25,10 @@ html, body {
   padding: 20px;
   border: 1px solid grey;
   background: white;
+}
+
+input {
+  position: absolute;
+  font-family: Architects Daughter;
+  font-size: 18px;
 }

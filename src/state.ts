@@ -36,6 +36,12 @@ export type TextElement = {
   value: string;
 };
 
+export type TextElementReference = {
+  cardInstanceId?: Id<CardInstance>;
+  pageId?: Id<Page>;
+  index: number;
+};
+
 export type Card = {
   id: Id<Card>;
   width: number;
@@ -439,6 +445,73 @@ export default class StateManager {
     }
   }
 
+  findTextElementAt(position: Point): TextElementReference | null {
+    const elements = this.state.pages[this.currentPage].textelements;
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+      if (Vec.dist(element.position, position) < 10) {
+        return {
+          pageId: this.currentPage,
+          index: i,
+        };
+      }
+    }
+
+    const instances = this.cardInstancesOnCurrentPage();
+    for (const instance of instances) {
+      const card = this.getCard(instance.cardId)!;
+      for (let i = 0; i < card.textelements.length; i++) {
+        const element = card.textelements[i];
+        const offset = Vec.add(element.position, instance);
+        if (Vec.dist(offset, position) < 10) {
+          return {
+            cardInstanceId: instance.id,
+            index: i,
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  getTextElementPosition(ref: TextElementReference): Point {
+    if (ref.pageId) {
+      const element = this.state.pages[ref.pageId].textelements[ref.index];
+      return element.position;
+    } else {
+      const instance = this.state.cardInstances[ref.cardInstanceId!];
+      const element = this.state.cards[instance.cardId].textelements[ref.index];
+      return Vec.add(element.position, instance);
+    }
+  }
+
+  getTextElementValue(ref: TextElementReference): string {
+    if (ref.pageId) {
+      const element = this.state.pages[ref.pageId].textelements[ref.index];
+      return element.value;
+    } else {
+      const instance = this.state.cardInstances[ref.cardInstanceId!];
+      const element = this.state.cards[instance.cardId].textelements[ref.index];
+      return element.value;
+    }
+  }
+
+  updateTextElement(ref: TextElementReference, value: string) {
+    if (ref.pageId) {
+      this.update((state) => {
+        const element = state.pages[ref.pageId!].textelements[ref.index];
+        element.value = value;
+      });
+    } else {
+      this.update((state) => {
+        const instance = state.cardInstances[ref.cardInstanceId!];
+        const element = state.cards[instance.cardId].textelements[ref.index];
+        element.value = value;
+      });
+    }
+  }
+
   render(render: Render) {
     // Page number
     const currentPage = this.state.pages[this.currentPage];
@@ -462,7 +535,7 @@ export default class StateManager {
         s.value,
         s.position.x,
         s.position.y,
-        font("18px Arial", "black")
+        font("18px Architects Daughter", "black")
       );
     });
 
@@ -588,7 +661,12 @@ export default class StateManager {
       // Text Elements
       card.textelements.forEach((s) => {
         const offset = Vec.add(s.position, instance);
-        render.text(s.value, offset.x, offset.y, font("18px Arial", "black"));
+        render.text(
+          s.value,
+          offset.x,
+          offset.y,
+          font("18px Architects Daughter", "black")
+        );
       });
     });
   }

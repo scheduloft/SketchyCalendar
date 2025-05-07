@@ -10,6 +10,7 @@ import { Calendar } from "./calendar";
 import "./index.css";
 
 import Input from "input";
+import TextInput from "textinput";
 
 // hack detect ipad screen
 if (window.screen.width == 1016 && window.screen.height == 746) {
@@ -66,7 +67,8 @@ const render = new Render();
 
 const state_manager = new StateManager(stateDocHandle, calendarDocHandle);
 const toolbar = new Toolbar();
-const selection = new Selection(state_manager);
+const text_input = new TextInput(state_manager);
+const selection = new Selection(state_manager, text_input);
 
 new Input(state_manager, selection, toolbar);
 
